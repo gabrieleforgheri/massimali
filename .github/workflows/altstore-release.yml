@@ -1,0 +1,70 @@
+name: AltStore release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build unsigned ipa
+        run: ./scripts/build_ipa.sh
+
+      - name: Prepare release metadata
+        id: meta
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          SIZE=$(stat -f%z build/Massimali.ipa)
+          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        run: |
+          gh release create "${{ github.ref_name }}" build/Massimali.ipa \
+            --title "Massimali ${{ steps.meta.outputs.version }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Update AltStore source
+        run: |
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Massimali.ipa"
+          jq \
+            --arg version "${{ steps.meta.outputs.version }}" \
+            --arg date "${{ steps.meta.outputs.date }}" \
+            --argjson size "${{ steps.meta.outputs.size }}" \
+            --arg url "$DOWNLOAD_URL" \
+            '.apps[0].version = $version
+             | .apps[0].versionDate = $date
+             | .apps[0].downloadURL = $url
+             | .apps[0].size = $size
+             | .apps[0].versions = [{
+                 version: $version,
+                 date: $date,
+                 localizedDescription: .apps[0].versionDescription,
+                 downloadURL: $url,
+                 size: $size,
+                 minOSVersion: .apps[0].minOSVersion
+               }] + .apps[0].versions' \
+            docs/apps.json > docs/apps.json.tmp
+          mv docs/apps.json.tmp docs/apps.json
+
+      - name: Commit updated source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/apps.json
+          git commit -m "Update AltStore source to ${{ github.ref_name }}" || exit 0
+          git push origin HEAD:main
