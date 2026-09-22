@@ -11,12 +11,6 @@
       "localizedDescription": "App per tenere traccia dei massimali su ogni macchinario della palestra: storico, grafici dei progressi, riscaldamento consigliato e log degli allenamenti. Dati tutti in locale.",
       "iconURL": "https://gabrieleforgheri.github.io/massimali/icon.png",
       "tintColor": "34C759",
-      "version": "1.0",
-      "versionDate": "2026-09-22T09:42:29Z",
-      "versionDescription": "Prima release.",
-      "downloadURL": "https://github.com/gabrieleforgheri/massimali/releases/download/v1.0/Massimali.ipa",
-      "size": 758910,
-      "minOSVersion": "17.0",
       "versions": [
         {
           "version": "1.0",
@@ -24,14 +18,6 @@
           "localizedDescription": "Prima release.",
           "downloadURL": "https://github.com/gabrieleforgheri/massimali/releases/download/v1.0/Massimali.ipa",
           "size": 758910,
-          "minOSVersion": "17.0"
-        },
-        {
-          "version": "1.0",
-          "date": "2026-09-22T00:00:00Z",
-          "localizedDescription": "Prima release.",
-          "downloadURL": "https://github.com/gabrieleforgheri/massimali/releases/download/v1.0/Massimali.ipa",
-          "size": 754132,
           "minOSVersion": "17.0"
         }
       ]

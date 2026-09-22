@@ -41,22 +41,21 @@ jobs:
       - name: Update AltStore source
         run: |
           DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Massimali.ipa"
+          NOTES=$(git tag -l --format='%(contents:subject)' "${{ github.ref_name }}")
+          [ -z "$NOTES" ] && NOTES="Aggiornamento."
           jq \
             --arg version "${{ steps.meta.outputs.version }}" \
             --arg date "${{ steps.meta.outputs.date }}" \
             --argjson size "${{ steps.meta.outputs.size }}" \
             --arg url "$DOWNLOAD_URL" \
-            '.apps[0].version = $version
-             | .apps[0].versionDate = $date
-             | .apps[0].downloadURL = $url
-             | .apps[0].size = $size
-             | .apps[0].versions = [{
+            --arg notes "$NOTES" \
+            '.apps[0].versions = [{
                  version: $version,
                  date: $date,
-                 localizedDescription: .apps[0].versionDescription,
+                 localizedDescription: $notes,
                  downloadURL: $url,
                  size: $size,
-                 minOSVersion: .apps[0].minOSVersion
+                 minOSVersion: (.apps[0].versions[0].minOSVersion // "17.0")
                }] + .apps[0].versions' \
             docs/apps.json > docs/apps.json.tmp
           mv docs/apps.json.tmp docs/apps.json
