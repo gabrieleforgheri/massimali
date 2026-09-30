@@ -13,6 +13,14 @@
       "tintColor": "34C759",
       "versions": [
         {
+          "version": "1.1",
+          "date": "2026-09-30T10:18:14Z",
+          "localizedDescription": "Massimali 1.1: Salute e Liquid Glass via AltStore, focus, Live Activity",
+          "downloadURL": "https://github.com/gabrieleforgheri/massimali/releases/download/v1.1/Massimali.ipa",
+          "size": 810960,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.0",
           "date": "2026-09-22T09:42:29Z",
           "localizedDescription": "Prima release.",
