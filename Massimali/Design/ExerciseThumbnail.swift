@@ -9,12 +9,29 @@ struct ExerciseThumbnail: View {
     var size: CGFloat = 42
     /// Quanto del riquadro occupa il pittogramma quando non c'è una foto.
     var glyphRatio: CGFloat = 0.64
+    /// Se c'è una foto, toccarla la apre intera.
+    var zoomable: Bool = false
+
+    @State private var showingPhoto = false
 
     private var shape: RoundedRectangle {
         RoundedRectangle(cornerRadius: size * 0.30, style: .continuous)
     }
 
     var body: some View {
+        if zoomable, let image = photo {
+            Button { showingPhoto = true } label: { thumbnail }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Mostra la foto di \(exercise.name)")
+                .fullScreenCover(isPresented: $showingPhoto) {
+                    PhotoViewer(image: image, title: exercise.name)
+                }
+        } else {
+            thumbnail
+        }
+    }
+
+    private var thumbnail: some View {
         ZStack {
             if let image = photo {
                 FramedPhoto(image: image, offset: exercise.photoOffset, side: size)
@@ -38,6 +55,55 @@ struct ExerciseThumbnail: View {
     }
 }
 
+/// La foto intera, per riconoscere il macchinario. Si chiude toccando
+/// o trascinando verso il basso.
+private struct PhotoViewer: View {
+    let image: UIImage
+    let title: String
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var drag: CGFloat = 0
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea()
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .offset(y: drag)
+                .gesture(
+                    DragGesture()
+                        .onChanged { drag = max(0, $0.translation.height) }
+                        .onEnded { value in
+                            if value.translation.height > 120 { dismiss() } else { withAnimation(.snappy) { drag = 0 } }
+                        }
+                )
+                .onTapGesture { dismiss() }
+
+            VStack(alignment: .leading) {
+                HStack {
+                    Text(title)
+                        .font(Theme.rounded(17, .bold))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                    .accessibilityLabel("Chiudi")
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+            }
+            .opacity(1 - min(drag / 200, 1))
+        }
+    }
+}
 
 /// Foto che riempie un quadrato, spostata lungo l'asse che sborda.
 struct FramedPhoto: View {

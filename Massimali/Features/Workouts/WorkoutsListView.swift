@@ -8,6 +8,7 @@ struct WorkoutsListView: View {
     @Query(sort: \Workout.date, order: .reverse) private var workouts: [Workout]
 
     @State private var path: [Workout] = []
+    @State private var showingFocusPicker = false
 
     private var activeWorkout: Workout? { workouts.first(where: \.isActive) }
     private var finishedWorkouts: [Workout] { workouts.filter { !$0.isActive } }
@@ -60,6 +61,9 @@ struct WorkoutsListView: View {
             .navigationDestination(for: Workout.self) { workout in
                 WorkoutSessionView(workout: workout)
             }
+            .sheet(isPresented: $showingFocusPicker) {
+                FocusPickerSheet(confirmTitle: "Inizia", onConfirm: startWorkout)
+            }
         }
     }
 
@@ -104,7 +108,7 @@ struct WorkoutsListView: View {
                     }
 
                     Button {
-                        startWorkout()
+                        showingFocusPicker = true
                     } label: {
                         Label("Inizia allenamento", systemImage: "bolt.fill")
                     }
@@ -114,10 +118,12 @@ struct WorkoutsListView: View {
         }
     }
 
-    private func startWorkout() {
+    private func startWorkout(focus: Set<MuscleGroup>) {
         let workout = Workout()
+        workout.focus = focus
         context.insert(workout)
         try? context.save()
+        WorkoutActivity.start(for: workout, unit: settings.unit)
         Haptics.commit()
         path.append(workout)
     }

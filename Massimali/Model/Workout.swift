@@ -9,6 +9,9 @@ final class Workout {
     /// `nil` finché la sessione è in corso.
     var endedAt: Date?
     var note: String = ""
+    /// Gruppi scelti a inizio sessione ("cosa alleni oggi"), come rawValue separati
+    /// da virgola. Vuoto = nessun filtro.
+    var focusRaw: String = ""
 
     @Relationship(deleteRule: .cascade, inverse: \WorkoutSet.workout)
     var sets: [WorkoutSet]? = []
@@ -22,6 +25,11 @@ final class Workout {
     var setList: [WorkoutSet] { sets ?? [] }
 
     var isActive: Bool { endedAt == nil }
+
+    var focus: Set<MuscleGroup> {
+        get { Set(focusRaw.split(separator: ",").compactMap { MuscleGroup(rawValue: String($0)) }) }
+        set { focusRaw = MuscleGroup.allCases.filter(newValue.contains).map(\.rawValue).joined(separator: ",") }
+    }
 
     var orderedSets: [WorkoutSet] {
         setList.sorted { $0.order < $1.order }

@@ -12,6 +12,7 @@ struct WorkoutSessionView: View {
     /// Esercizi scelti ma ancora senza serie: esistono solo finché la vista è aperta.
     @State private var pendingExercises: [Exercise] = []
     @State private var showingPicker = false
+    @State private var showingFocusPicker = false
     @State private var addSetTarget: Exercise?
     @State private var editingSet: WorkoutSet?
     @State private var showingSummary = false
@@ -87,7 +88,7 @@ struct WorkoutSessionView: View {
         .navigationTitle(Fmt.relativeDay(workout.date))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingPicker) {
-            ExercisePickerSheet { exercise in
+            ExercisePickerSheet(focus: workout.focus) { exercise in
                 if !exercises.contains(where: { $0.persistentModelID == exercise.persistentModelID }) {
                     pendingExercises.append(exercise)
                 }
@@ -113,6 +114,13 @@ struct WorkoutSessionView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingFocusPicker) {
+            FocusPickerSheet(initial: workout.focus, confirmTitle: "Salva") { focus in
+                workout.focus = focus
+                try? context.save()
+            }
+        }
+        .onAppear { WorkoutActivity.start(for: workout, unit: settings.unit) }
         .sheet(isPresented: $showingSummary) {
             WorkoutSummaryView(workout: workout) { dismiss() }
         }
@@ -179,6 +187,29 @@ struct WorkoutSessionView: View {
                         MiniStat(value: "\(recordCount)", label: "record")
                     }
                 }
+
+                focusRow
+            }
+        }
+    }
+
+    /// Cosa si allena oggi: filtra il selettore degli esercizi.
+    private var focusRow: some View {
+        HStack(spacing: 6) {
+            let focus = MuscleGroup.allCases.filter(workout.focus.contains)
+            if focus.isEmpty {
+                Text("Tutti i gruppi")
+                    .font(Theme.rounded(12, .medium))
+                    .foregroundStyle(Theme.textTertiary)
+            } else {
+                ForEach(focus) { MuscleGroupChip(group: $0, compact: focus.count > 3) }
+            }
+            Spacer(minLength: 0)
+            if workout.isActive {
+                Button("Modifica") { showingFocusPicker = true }
+                    .font(Theme.rounded(13, .bold))
+                    .foregroundStyle(settings.accentColor)
+                    .buttonStyle(.plain)
             }
         }
     }
@@ -224,6 +255,8 @@ struct WorkoutSessionView: View {
         let isRecord = RecordService.evaluatePersonalRecord(for: set, context: context)
         try? context.save()
 
+        WorkoutActivity.update(for: workout, unit: settings.unit)
+
         withAnimation(.snappy) {
             pendingExercises.removeAll { $0.persistentModelID == exercise.persistentModelID }
         }
@@ -245,6 +278,7 @@ struct WorkoutSessionView: View {
 
         let isRecord = RecordService.evaluatePersonalRecord(for: set, context: context)
         try? context.save()
+        WorkoutActivity.update(for: workout, unit: settings.unit)
         if isRecord { Haptics.personalRecord() } else { Haptics.commit() }
     }
 
@@ -281,12 +315,14 @@ struct WorkoutSessionView: View {
             context.delete(set)
             try? context.save()
         }
+        WorkoutActivity.update(for: workout, unit: settings.unit)
         Haptics.warning()
     }
 
     private func finish() {
         workout.endedAt = Date()
         try? context.save()
+        WorkoutActivity.end()
         if let date = try? BackupService.writeAutoBackup(context: context) {
             settings.lastBackupDate = date
         }
@@ -315,7 +351,7 @@ private struct ExerciseSessionCard: View {
         GlassCard(padding: 16) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
-                    ExerciseThumbnail(exercise: exercise, size: 34)
+                    ExerciseThumbnail(exercise: exercise, size: 34, zoomable: true)
 
                     VStack(alignment: .leading, spacing: 1) {
                         Text(exercise.name)

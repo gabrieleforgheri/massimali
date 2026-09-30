@@ -28,11 +28,6 @@ struct MaxesListView: View {
         }
     }
 
-    /// L'invito compare finché non hai scelto e finché la lista è davvero lunga.
-    private var showCurationInvite: Bool {
-        !settings.didCurateCatalog && allExercises.filter { !$0.isArchived }.count > 50
-    }
-
     private var withMaxCount: Int {
         allExercises.filter { !$0.isArchived && !$0.recordList.isEmpty }.count
     }
@@ -70,34 +65,6 @@ struct MaxesListView: View {
 
     private var list: some View {
         List {
-            if Provisioning.isExpiringSoon(), let status = Provisioning.statusText() {
-                Section {
-                    WarningBanner(
-                        symbol: "clock.badge.exclamationmark",
-                        title: "L'app sta per scadere",
-                        message: "\(status). Ricollega l'iPhone al Mac e premi Run in Xcode per rinnovarla: i dati restano al loro posto."
-                    )
-                    .plainListRow()
-                }
-            }
-
-            if showCurationInvite {
-                Section {
-                    NavigationLink {
-                        CatalogCurationView()
-                    } label: {
-                        WarningBanner(
-                            symbol: "checklist",
-                            title: "Sfoltisci il catalogo",
-                            message: "Ci sono \(allExercises.count) macchinari, molti dei quali la tua palestra non ha. Scegli i tuoi: gli altri si archiviano in blocco.",
-                            tint: settings.accentColor
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .plainListRow()
-                }
-            }
-
             Section {
                 filterRow
                     .plainListRow()
@@ -212,7 +179,7 @@ private struct ExerciseRow: View {
     var body: some View {
         GlassCard(padding: 14) {
             HStack(spacing: 14) {
-                ExerciseThumbnail(exercise: exercise, size: 42)
+                ExerciseThumbnail(exercise: exercise, size: 42, zoomable: true)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(exercise.name)

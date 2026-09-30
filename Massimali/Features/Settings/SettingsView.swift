@@ -8,12 +8,19 @@ struct SettingsView: View {
 
     @Query(sort: \Exercise.sortIndex) private var exercises: [Exercise]
 
-    @State private var shareURL: URL?
+    // Un solo stato opzionale invece di URL + Bool separati: con .sheet(isPresented:)
+    // impostare i due insieme può far presentare lo sheet prima che il secondo stato
+    // sia visibile al closure, aprendolo vuoto. .sheet(item:) lega la presentazione
+    // direttamente al valore, eliminando la race.
+    private struct ShareFile: Identifiable {
+        let id = UUID()
+        let url: URL
+    }
+    @State private var shareFile: ShareFile?
     @State private var showingImporter = false
     @State private var pendingImport: Data?
     @State private var showingImportChoice = false
     @State private var showingEraseConfirm = false
-    @State private var showingShare = false
     @State private var healthMessage: String?
     @State private var alert: AlertPayload?
 
@@ -38,8 +45,7 @@ struct SettingsView: View {
                             message: exportReminderMessage,
                             actionTitle: "Esporta adesso"
                         ) {
-                            refreshShareFile()
-                            showingShare = true
+                            exportBackup()
                         }
                     }
 
@@ -108,14 +114,11 @@ struct SettingsView: View {
             }
             .screenBackground(settings.accentColor)
             .navigationTitle("Impostazioni")
-            .onAppear(perform: refreshShareFile)
-            .sheet(isPresented: $showingShare) {
-                if let shareURL {
-                    ShareSheet(items: [shareURL]) { completed in
-                        if completed {
-                            settings.lastExportDate = Date()
-                            Haptics.success()
-                        }
+            .sheet(item: $shareFile) { file in
+                ShareSheet(items: [file.url]) { completed in
+                    if completed {
+                        settings.lastExportDate = Date()
+                        Haptics.success()
                     }
                 }
             }
@@ -209,8 +212,7 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.textSecondary)
 
                 Button {
-                    refreshShareFile()
-                    showingShare = true
+                    exportBackup()
                 } label: {
                     Label("Esporta backup", systemImage: "square.and.arrow.up")
                 }
@@ -332,28 +334,10 @@ struct SettingsView: View {
     }
 
     private var infoCard: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 10) {
-                SectionHeader(title: "Nota sulla firma")
-                Text("L'app è installata con un Apple ID gratuito: il certificato scade dopo 7 giorni e l'app smette di aprirsi. Basta ricollegare l'iPhone al Mac e premere Run in Xcode per rinnovarla — i dati restano al loro posto finché non disinstalli l'app.")
-                    .font(Theme.rounded(12, .medium))
-                    .foregroundStyle(Theme.textSecondary)
-                if let status = Provisioning.statusText() {
-                    Divider().overlay(Theme.stroke)
-                    HStack(spacing: 8) {
-                        Image(systemName: Provisioning.isExpiringSoon() ? "exclamationmark.triangle.fill" : "checkmark.seal")
-                            .foregroundStyle(Provisioning.isExpiringSoon() ? .orange : Theme.textTertiary)
-                        Text(status)
-                            .font(Theme.rounded(13, .semibold))
-                            .foregroundStyle(Provisioning.isExpiringSoon() ? .orange : Theme.textSecondary)
-                    }
-                }
-
-                Text("Massimali 1.0")
-                    .font(Theme.rounded(11, .medium))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-        }
+        Text("Massimali \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
+            .font(Theme.rounded(11, .medium))
+            .foregroundStyle(Theme.textTertiary)
+            .frame(maxWidth: .infinity)
     }
 
     private func connectHealth() async {
@@ -387,8 +371,12 @@ struct SettingsView: View {
 
     // MARK: - Azioni
 
-    private func refreshShareFile() {
-        shareURL = try? BackupService.makeShareFile(context: context)
+    private func exportBackup() {
+        do {
+            shareFile = ShareFile(url: try BackupService.makeShareFile(context: context))
+        } catch {
+            alert = AlertPayload(title: "Esportazione non riuscita", message: error.localizedDescription)
+        }
     }
 
     private func handlePickedFile(_ result: Result<[URL], Error>) {
@@ -414,7 +402,6 @@ struct SettingsView: View {
         do {
             let file = try BackupService.restore(from: data, context: context, mode: mode)
             settings.didSeedCatalog = true
-            refreshShareFile()
             Haptics.success()
             alert = AlertPayload(
                 title: "Backup importato",

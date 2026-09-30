@@ -11,9 +11,12 @@ struct ExercisePickerSheet: View {
     /// Con 98 macchinari a catalogo, scorrere ogni volta è il vero attrito.
     @Query private var recentSets: [WorkoutSet]
 
+    /// I gruppi di oggi. Vuoto = tutti.
+    let focus: Set<MuscleGroup>
     let onSelect: (Exercise) -> Void
 
-    init(onSelect: @escaping (Exercise) -> Void) {
+    init(focus: Set<MuscleGroup> = [], onSelect: @escaping (Exercise) -> Void) {
+        self.focus = focus
         self.onSelect = onSelect
         var descriptor = FetchDescriptor<WorkoutSet>(
             sortBy: [SortDescriptor(\WorkoutSet.createdAt, order: .reverse)]
@@ -28,7 +31,7 @@ struct ExercisePickerSheet: View {
         var seen = Set<PersistentIdentifier>()
         var result: [Exercise] = []
         for set in recentSets {
-            guard let exercise = set.exercise, !exercise.isArchived else { continue }
+            guard let exercise = set.exercise, !exercise.isArchived, isVisible(exercise) else { continue }
             if seen.insert(exercise.persistentModelID).inserted {
                 result.append(exercise)
             }
@@ -39,10 +42,18 @@ struct ExercisePickerSheet: View {
 
     @State private var search = ""
     @State private var showingNewExercise = false
+    /// Scappatoia per l'esercizio fuori programma: vale solo per questo foglio.
+    @State private var showAll = false
+
+    private var isFiltering: Bool { !focus.isEmpty && !showAll }
+
+    private func isVisible(_ exercise: Exercise) -> Bool {
+        !isFiltering || focus.contains(exercise.muscleGroup)
+    }
 
     private var grouped: [(group: MuscleGroup, items: [Exercise])] {
         let filtered = allExercises.filter { exercise in
-            guard !exercise.isArchived else { return false }
+            guard !exercise.isArchived, isVisible(exercise) else { return false }
             guard !search.isEmpty else { return true }
             return exercise.name.localizedCaseInsensitiveContains(search)
         }
@@ -54,30 +65,34 @@ struct ExercisePickerSheet: View {
 
     @ViewBuilder
     private func exerciseRow(_ exercise: Exercise) -> some View {
-        Button {
-            onSelect(exercise)
-            dismiss()
-        } label: {
-            HStack(spacing: 12) {
-                ExerciseThumbnail(exercise: exercise, size: 32)
+        // La miniatura sta fuori dal bottone: toccarla apre la foto, non sceglie.
+        HStack(spacing: 12) {
+            ExerciseThumbnail(exercise: exercise, size: 32, zoomable: true)
 
-                Text(exercise.name)
-                    .font(Theme.rounded(15, .semibold))
-                    .foregroundStyle(Theme.textPrimary)
+            Button {
+                onSelect(exercise)
+                dismiss()
+            } label: {
+                HStack(spacing: 12) {
+                    Text(exercise.name)
+                        .font(Theme.rounded(15, .semibold))
+                        .foregroundStyle(Theme.textPrimary)
 
-                Spacer()
+                    Spacer()
 
-                if let max = exercise.currentMax {
-                    Text(Fmt.weight(max, unit: settings.unit))
-                        .font(Theme.rounded(12, .medium))
-                        .foregroundStyle(Theme.textTertiary)
+                    if let max = exercise.currentMax {
+                        Text(Fmt.weight(max, unit: settings.unit))
+                            .font(Theme.rounded(12, .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
                 }
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 14)
-            .glassSurface(radius: Theme.radiusSmall)
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .glassSurface(radius: Theme.radiusSmall)
         .plainListRow()
     }
 
@@ -106,6 +121,18 @@ struct ExercisePickerSheet: View {
                             .textCase(nil)
                             .padding(.horizontal, 2)
                     }
+                }
+
+                if isFiltering {
+                    Button("Mostra tutti i macchinari") {
+                        withAnimation { showAll = true }
+                    }
+                    .font(Theme.rounded(14, .semibold))
+                    .foregroundStyle(settings.accentColor)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .buttonStyle(.plain)
+                    .plainListRow()
                 }
             }
             .listStyle(.plain)

@@ -17,6 +17,8 @@ struct ExerciseEditorView: View {
     @State private var name = ""
     @State private var group: MuscleGroup = .petto
     @State private var step: Double = 2.5
+    /// Incremento scritto a mano invece di uno dei valori preimpostati.
+    @State private var customStep = false
     @State private var notes = ""
     @State private var isArchived = false
     @State private var showingDeleteConfirm = false
@@ -85,22 +87,31 @@ struct ExerciseEditorView: View {
                             SectionHeader(title: "Incremento del carico", trailing: "\(Fmt.weight(step, unit: .kg))")
                             HStack(spacing: 8) {
                                 ForEach(steps, id: \.self) { candidate in
-                                    Button {
+                                    stepChip(
+                                        candidate.formatted(.number.precision(.fractionLength(0...2))),
+                                        isOn: !customStep && step == candidate
+                                    ) {
                                         step = candidate
-                                        Haptics.tap()
-                                    } label: {
-                                        Text(candidate.formatted(.number.precision(.fractionLength(0...2))))
-                                            .font(Theme.rounded(13, .bold))
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 9)
-                                            .background(
-                                                step == candidate ? settings.accentColor.opacity(0.22) : Theme.card,
-                                                in: RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            )
-                                            .foregroundStyle(step == candidate ? settings.accentColor : Theme.textSecondary)
+                                        customStep = false
                                     }
-                                    .buttonStyle(.plain)
                                 }
+                                stepChip("Altro", isOn: customStep) { customStep = true }
+                            }
+                            if customStep {
+                                HStack {
+                                    TextField("Es. 3,5", value: Binding(
+                                        get: { step },
+                                        set: { if $0 > 0 { step = $0 } }
+                                    ), format: .number.precision(.fractionLength(0...2)))
+                                    .keyboardType(.decimalPad)
+                                    .font(Theme.rounded(17, .semibold))
+                                    Text("kg")
+                                        .font(Theme.rounded(13, .semibold))
+                                        .foregroundStyle(Theme.textTertiary)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(Theme.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             }
                             Text("È il salto minimo tra un carico e l'altro su questo macchinario: definisce i pulsanti + e −.")
                                 .font(Theme.rounded(11, .medium))
@@ -377,6 +388,26 @@ struct ExerciseEditorView: View {
         .overlay(shape.strokeBorder(Theme.stroke, lineWidth: 1))
     }
 
+    private func stepChip(_ title: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            action()
+            Haptics.tap()
+        } label: {
+            Text(title)
+                .font(Theme.rounded(13, .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+                .background(
+                    isOn ? settings.accentColor.opacity(0.22) : Theme.card,
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                )
+                .foregroundStyle(isOn ? settings.accentColor : Theme.textSecondary)
+        }
+        .buttonStyle(.plain)
+    }
+
     private func load() {
         guard !didLoad else { return }
         didLoad = true
@@ -387,6 +418,7 @@ struct ExerciseEditorView: View {
         name = exercise.name
         group = exercise.muscleGroup
         step = exercise.incrementStep
+        customStep = !steps.contains(step)
         notes = exercise.notes
         isArchived = exercise.isArchived
         photoData = exercise.photo

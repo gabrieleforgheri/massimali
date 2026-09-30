@@ -49,17 +49,6 @@ final class RemindersTests: XCTestCase {
         XCTAssertEqual(second.unit, .lb)
     }
 
-    // MARK: - Scadenza della firma
-
-    /// Nel bundle dei test non c'è nessun profilo: deve restituire nil senza
-    /// esplodere, che è esattamente quello che succede anche sul simulatore.
-    func testProvisioningIsSilentWithoutProfile() {
-        XCTAssertNil(Provisioning.expirationDate)
-        XCTAssertNil(Provisioning.daysRemaining())
-        XCTAssertNil(Provisioning.statusText())
-        XCTAssertFalse(Provisioning.isExpiringSoon())
-    }
-
     // MARK: - Peso corporeo
 
     func testBodyWeightSurvivesBackupRoundTrip() throws {

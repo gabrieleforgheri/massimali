@@ -103,7 +103,7 @@ struct ExerciseDetailView: View {
         GlassCard(padding: 20, tint: tint) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 10) {
-                    ExerciseThumbnail(exercise: exercise, size: 52)
+                    ExerciseThumbnail(exercise: exercise, size: 52, zoomable: true)
                     MuscleGroupChip(group: exercise.muscleGroup)
                     Spacer()
                     if let best = exercise.bestRecord, best.isEstimated {

@@ -44,6 +44,8 @@ struct WorkoutDTO: Codable {
     var date: Date
     var endedAt: Date?
     var note: String
+    /// Opzionale: i backup scritti prima del focus restano leggibili.
+    var focus: String?
     var sets: [WorkoutSetDTO]
 }
 

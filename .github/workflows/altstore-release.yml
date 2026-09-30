@@ -10,9 +10,13 @@ permissions:
 
 jobs:
   release:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+
+      # Serve l'SDK di iOS 26 o successivo: con uno più vecchio sparisce Liquid Glass.
+      - name: Select latest Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
 
       - name: Install XcodeGen
         run: brew install xcodegen

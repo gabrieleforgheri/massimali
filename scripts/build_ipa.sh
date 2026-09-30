@@ -21,6 +21,11 @@ xcodebuild archive \
 
 mkdir -p build/Payload
 cp -r build/Massimali.xcarchive/Products/Applications/Massimali.app build/Payload/
+
+# Firma ad-hoc solo per incidere gli entitlement nel binario: AltStore rifirma
+# con quelli che trova qui. Senza, HealthKit manca e Salute non si collega.
+codesign -f -s - build/Payload/Massimali.app/PlugIns/MassimaliWidgets.appex
+codesign -f -s - --entitlements Massimali/Massimali.entitlements build/Payload/Massimali.app
 (cd build && zip -qry Massimali.ipa Payload)
 
 echo "build/Massimali.ipa"

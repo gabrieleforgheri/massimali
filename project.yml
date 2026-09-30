@@ -19,6 +19,9 @@ settings:
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: HKR6AKCLPA
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    # Qui e non nei target: app ed estensione devono avere la stessa versione.
+    MARKETING_VERSION: "1.1"
+    CURRENT_PROJECT_VERSION: "2"
 
 targets:
   Massimali:
@@ -26,19 +29,42 @@ targets:
     platform: iOS
     sources:
       - path: Massimali
+      - path: Shared
+    dependencies:
+      - target: MassimaliWidgets
     settings:
       base:
         PRODUCT_NAME: Massimali
         PRODUCT_BUNDLE_IDENTIFIER: com.gabrieleforghieri.massimali
         INFOPLIST_FILE: Massimali/Info.plist
         CODE_SIGN_ENTITLEMENTS: Massimali/Massimali.entitlements
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_PREVIEWS: YES
         SWIFT_EMIT_LOC_STRINGS: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: NO
+
+  # Live Activity dell'allenamento: schermata di blocco e Dynamic Island.
+  MassimaliWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: MassimaliWidgets
+      - path: Shared
+    info:
+      path: MassimaliWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Massimali
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gabrieleforghieri.massimali.widgets
+        TARGETED_DEVICE_FAMILY: "1"
+        SKIP_INSTALL: YES
         GENERATE_INFOPLIST_FILE: NO
 
   MassimaliTests:

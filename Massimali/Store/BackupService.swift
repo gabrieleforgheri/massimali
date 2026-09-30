@@ -93,6 +93,7 @@ enum BackupService {
                     date: workout.date,
                     endedAt: workout.endedAt,
                     note: workout.note,
+                    focus: workout.focusRaw,
                     sets: workout.orderedSets.map { set in
                         WorkoutSetDTO(
                             uuid: set.uuid,
@@ -216,6 +217,7 @@ enum BackupService {
             let workout = Workout(date: dto.date, note: dto.note)
             workout.uuid = dto.uuid
             workout.endedAt = dto.endedAt
+            workout.focusRaw = dto.focus ?? ""
             context.insert(workout)
 
             for setDTO in dto.sets {
