@@ -28,7 +28,18 @@
           "size": 758910,
           "minOSVersion": "17.0"
         }
-      ]
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "com.apple.developer.healthkit",
+          "com.apple.developer.healthkit.access"
+        ],
+        "privacy": {
+          "NSCameraUsageDescription": "Per fotografare i macchinari della tua palestra e riconoscerli a colpo d'occhio nella lista.",
+          "NSHealthShareUsageDescription": "Per leggere il tuo peso corporeo da Salute senza doverlo riscrivere a mano.",
+          "NSHealthUpdateUsageDescription": "Per registrare in Salute gli allenamenti che completi e le pesate che inserisci."
+        }
+      }
     }
   ],
   "news": []
