@@ -13,6 +13,14 @@
       "tintColor": "34C759",
       "versions": [
         {
+          "version": "1.2",
+          "date": "2026-09-30T10:35:58Z",
+          "localizedDescription": "Massimali 1.2: nome dell'allenamento",
+          "downloadURL": "https://github.com/gabrieleforgheri/massimali/releases/download/v1.2/Massimali.ipa",
+          "size": 819414,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.1",
           "date": "2026-09-30T10:18:14Z",
           "localizedDescription": "Massimali 1.1: Salute e Liquid Glass via AltStore, focus, Live Activity",
