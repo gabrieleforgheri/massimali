@@ -21,12 +21,15 @@ final class WorkoutFocusTests: XCTestCase {
         let source = ModelContext(try AppStore.makeContainer(inMemory: true))
         let workout = Workout()
         workout.focus = [.gambe]
+        workout.name = "Gambe 1"
         source.insert(workout)
         try source.save()
 
         let destination = ModelContext(try AppStore.makeContainer(inMemory: true))
         try BackupService.restore(from: try BackupService.data(context: source), context: destination, mode: .replace)
-        XCTAssertEqual(try destination.fetch(FetchDescriptor<Workout>()).first?.focus, [.gambe])
+        let restored = try destination.fetch(FetchDescriptor<Workout>()).first
+        XCTAssertEqual(restored?.focus, [.gambe])
+        XCTAssertEqual(restored?.name, "Gambe 1")
 
         let old = """
         {"version":1,"exportedAt":"2026-01-15T10:00:00Z","exercises":[],
@@ -34,6 +37,8 @@ final class WorkoutFocusTests: XCTestCase {
         """
         let context = ModelContext(try AppStore.makeContainer(inMemory: true))
         try BackupService.restore(from: Data(old.utf8), context: context, mode: .replace)
-        XCTAssertEqual(try context.fetch(FetchDescriptor<Workout>()).first?.focus, [])
+        let legacy = try context.fetch(FetchDescriptor<Workout>()).first
+        XCTAssertEqual(legacy?.focus, [])
+        XCTAssertEqual(legacy?.name, "")
     }
 }

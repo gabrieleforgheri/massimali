@@ -9,6 +9,8 @@ final class Workout {
     /// `nil` finché la sessione è in corso.
     var endedAt: Date?
     var note: String = ""
+    /// Nome dato a inizio sessione, es. "Push 1". Vuoto = si mostra la data.
+    var name: String = ""
     /// Gruppi scelti a inizio sessione ("cosa alleni oggi"), come rawValue separati
     /// da virgola. Vuoto = nessun filtro.
     var focusRaw: String = ""

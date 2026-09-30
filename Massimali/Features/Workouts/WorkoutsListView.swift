@@ -85,6 +85,12 @@ struct WorkoutsListView: View {
                             .foregroundStyle(Theme.textTertiary)
                     }
 
+                    if !activeWorkout.name.isEmpty {
+                        Text(activeWorkout.name)
+                            .font(Theme.rounded(19, .bold))
+                            .foregroundStyle(Theme.textPrimary)
+                    }
+
                     HStack(spacing: 18) {
                         MiniStat(value: "\(activeWorkout.workingSetCount)", label: "serie")
                         MiniStat(value: Fmt.volume(activeWorkout.totalVolume, unit: settings.unit), label: "volume")
@@ -118,8 +124,9 @@ struct WorkoutsListView: View {
         }
     }
 
-    private func startWorkout(focus: Set<MuscleGroup>) {
+    private func startWorkout(name: String, focus: Set<MuscleGroup>) {
         let workout = Workout()
+        workout.name = name
         workout.focus = focus
         context.insert(workout)
         try? context.save()
@@ -157,9 +164,16 @@ private struct WorkoutRow: View {
         GlassCard(padding: 14) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text(Fmt.relativeDay(workout.date))
-                        .font(Theme.rounded(15, .bold))
-                        .foregroundStyle(Theme.textPrimary)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(workout.name.isEmpty ? Fmt.relativeDay(workout.date) : workout.name)
+                            .font(Theme.rounded(15, .bold))
+                            .foregroundStyle(Theme.textPrimary)
+                        if !workout.name.isEmpty {
+                            Text(Fmt.relativeDay(workout.date))
+                                .font(Theme.rounded(11, .medium))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
                     if prCount > 0 {
                         PRBadge(text: prCount == 1 ? "1 PR" : "\(prCount) PR")
                     }

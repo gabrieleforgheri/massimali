@@ -85,7 +85,7 @@ struct WorkoutSessionView: View {
             .padding(.bottom, 30)
         }
         .screenBackground(settings.accentColor)
-        .navigationTitle(Fmt.relativeDay(workout.date))
+        .navigationTitle(workout.name.isEmpty ? Fmt.relativeDay(workout.date) : workout.name)
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingPicker) {
             ExercisePickerSheet(focus: workout.focus) { exercise in
@@ -115,7 +115,8 @@ struct WorkoutSessionView: View {
             }
         }
         .sheet(isPresented: $showingFocusPicker) {
-            FocusPickerSheet(initial: workout.focus, confirmTitle: "Salva") { focus in
+            FocusPickerSheet(initialName: workout.name, initial: workout.focus, confirmTitle: "Salva") { name, focus in
+                workout.name = name
                 workout.focus = focus
                 try? context.save()
             }

@@ -94,6 +94,7 @@ enum BackupService {
                     endedAt: workout.endedAt,
                     note: workout.note,
                     focus: workout.focusRaw,
+                    name: workout.name,
                     sets: workout.orderedSets.map { set in
                         WorkoutSetDTO(
                             uuid: set.uuid,
@@ -218,6 +219,7 @@ enum BackupService {
             workout.uuid = dto.uuid
             workout.endedAt = dto.endedAt
             workout.focusRaw = dto.focus ?? ""
+            workout.name = dto.name ?? ""
             context.insert(workout)
 
             for setDTO in dto.sets {

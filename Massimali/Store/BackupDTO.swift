@@ -46,6 +46,8 @@ struct WorkoutDTO: Codable {
     var note: String
     /// Opzionale: i backup scritti prima del focus restano leggibili.
     var focus: String?
+    /// Opzionale: i backup scritti prima dei nomi restano leggibili.
+    var name: String?
     var sets: [WorkoutSetDTO]
 }
 
