@@ -20,8 +20,18 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Per tenere attivo il conteggio delle ripetizioni durante la serie.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Per tenere attivo il conteggio delle ripetizioni durante la serie. L'allenamento in Salute lo registra l'iPhone.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Per contare le ripetizioni dal movimento del polso.</string>
 	<key>WKApplication</key>
 	<true/>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.gabrieleforghieri.massimali.HKR6AKCLPA</string>
 	<key>WKRunsIndependentlyOfCompanionApp</key>

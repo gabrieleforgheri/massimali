@@ -89,6 +89,14 @@ targets:
         WKApplication: true
         WKRunsIndependentlyOfCompanionApp: true
         WKCompanionAppBundleIdentifier: com.gabrieleforghieri.massimali.HKR6AKCLPA
+        WKBackgroundModes: [workout-processing]
+        NSHealthShareUsageDescription: Per tenere attivo il conteggio delle ripetizioni durante la serie.
+        NSHealthUpdateUsageDescription: Per tenere attivo il conteggio delle ripetizioni durante la serie. L'allenamento in Salute lo registra l'iPhone.
+        NSMotionUsageDescription: Per contare le ripetizioni dal movimento del polso.
+    entitlements:
+      path: MassimaliWatch/MassimaliWatch.entitlements
+      properties:
+        com.apple.developer.healthkit: true
     settings:
       base:
         PRODUCT_NAME: Massimali

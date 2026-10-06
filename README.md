@@ -88,6 +88,8 @@ Massimali/
     Progress/                volume settimanale, ripartizione, top movers
     Settings/                unità, formula, accento, Salute, backup, catalogo,
                              sfoltimento del catalogo (CatalogCurationView)
+MassimaliWatch/              app Watch: contatore, Digital Crown, invio delle serie
+WatchShared/                 messaggi iPhone↔Watch e RepCounter (compilati in entrambe)
 MassimaliTests/              1RM, riscaldamento, rilevamento record, statistiche,
                              pittogrammi e foto, round-trip del backup
 ```
@@ -159,6 +161,37 @@ nella schermata di modifica. Lo spostamento è un solo numero da −1 a 1 sull'a
 sborda dal quadrato (`Design/PhotoFraming.swift`), applicato ovunque compaia la
 miniatura. Il gesto ha la priorità sulla `ScrollView`, altrimenti trascinando in
 verticale scorrerebbe la pagina.
+
+## App per Apple Watch
+
+Sugli esercizi di **braccia** il Watch conta le ripetizioni dal movimento del polso,
+vibra a ognuna e, a serie finita, la registra nella sessione dell'iPhone con il carico
+mostrato (si corregge con la Digital Crown). Sulle gambe il polso è fermo: lì le
+ripetizioni si inseriscono a mano dal Watch. Sui monolaterali il Watch va sul braccio
+che lavora.
+
+- **Avvio**: icona del Watch sulla card dell'esercizio nella sessione (apre l'app
+  sull'orologio tramite HealthKit e fa partire la serie) oppure *Via* sul Watch.
+- **Modalità** (*Impostazioni → Apple Watch*): via a mano e fine automatica dopo N
+  secondi fermo (default 4 s), via e fine a mano, oppure tutto automatico (sotto le 3
+  ripetizioni è un falso allarme e non si registra).
+- **Sensibilità**: è la manopola di calibrazione del contatore
+  (`WatchShared/RepCounter.swift`): se salta ripetizioni alzala, se ne conta troppe
+  abbassala.
+- Una serie arrivata dal Watch senza sessione aperta ne apre una nuova.
+
+### Installazione
+
+AltStore non firma le app per Watch (`ALTSigner` gestisce solo `PlugIns/*.appex`), quindi
+l'app Watch **non è nell'ipa** e si installa da Xcode: scheme **MassimaliWatch**,
+destinazione l'Apple Watch, Run. Dichiara come companion il bundle id che AltStore dà
+all'app iPhone (`com.gabrieleforghieri.massimali.HKR6AKCLPA`); se cambi Apple ID/team va
+aggiornato in `project.yml`. Con l'Apple ID gratuito scade dopo 7 giorni come l'app:
+si rinnova rilanciando Run.
+
+Per tenere i sensori accesi a polso abbassato il Watch apre una sessione di
+allenamento HealthKit che **non viene mai salvata**: in Salute l'allenamento lo scrive
+già l'iPhone.
 
 ## Peso corporeo e app Salute
 
