@@ -193,7 +193,7 @@ struct ExerciseDetailView: View {
                     }
                 }
 
-                Text("Pesi arrotondati al passo del macchinario (\(Fmt.weight(exercise.incrementStep, unit: settings.unit))).")
+                Text("Pesi sulla griglia del macchinario, a passi (\(Fmt.weight(exercise.incrementStep, unit: settings.unit))).")
                     .font(Theme.rounded(11, .medium))
                     .foregroundStyle(Theme.textTertiary)
             }

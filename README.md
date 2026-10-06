@@ -101,8 +101,10 @@ nulla. Il catalogo viene seminato **solo al primo avvio**: per aggiungere voci n
 a un'installazione esistente c'è *Impostazioni → Aggiungi i macchinari mancanti*.
 
 Per ogni esercizio con un massimale registrato l'app propone il **riscaldamento**:
-rampa 40% × 10 → 60% × 6 → 80% × 3 **sul carico vero** dell'esercizio, con i pesi
-arrotondati per difetto al passo del macchinario. Compare nel sottotitolo della lista, in una card nel dettaglio e come
+rampa 40% × 10 → 60% × 6 → 80% × 3 **sul carico vero** dell'esercizio. I pesi stanno
+sulla griglia del macchinario: si parte dal massimale e si scende di N passi fino al
+peso più vicino a quello calcolato, così anche un pacco sfalsato (5 → 8,75 → 12,5…)
+dà solo pesi inseribili. Compare nel sottotitolo della lista, in una card nel dettaglio e come
 pulsanti di compilazione rapida quando aggiungi una serie di riscaldamento.
 
 Ogni macchinario ha un'**immagine**, con due livelli:

@@ -11,20 +11,32 @@ final class WarmupTests: XCTestCase {
         XCTAssertEqual(plan.map(\.percentLabel), ["40%", "60%", "80%"])
     }
 
-    /// Su una leg press da 10 kg non ha senso suggerire 47,5 kg.
-    func testWeightsAreRoundedDownToMachineStep() {
+    /// Si scende dal massimale di N passi fino al peso più vicino al calcolato.
+    func testWeightsAreNearestOnMachineGrid() {
         let plan = Warmup.plan(base: 119, step: 10)
-        XCTAssertEqual(plan.map(\.weight), [40, 70, 90])
+        XCTAssertEqual(plan.map(\.weight), [49, 69, 99])
 
-        let fine = Warmup.plan(base: 119, step: 2.5)
-        XCTAssertEqual(fine.map(\.weight), [47.5, 70, 95])
+        let fine = Warmup.plan(base: 120, step: 2.5)
+        XCTAssertEqual(fine.map(\.weight), [47.5, 72.5, 95])
     }
 
-    /// Con massimali piccoli l'arrotondamento non deve mai produrre zero.
+    /// Pacco sfalsato (passo 3,75 che non parte da zero): ogni peso suggerito
+    /// dev'essere raggiungibile dal massimale scendendo di passi interi.
+    func testOffsetStackStaysOnGrid() {
+        let base = 50.0, step = 3.75
+        for warmup in Warmup.plan(base: base, step: step) {
+            let steps = (base - warmup.weight) / step
+            XCTAssertEqual(steps, steps.rounded(), accuracy: 0.0001, "\(warmup.weight) fuori griglia")
+            XCTAssertLessThanOrEqual(abs(warmup.weight - base * warmup.percent), step / 2 + 0.0001)
+        }
+    }
+
+    /// Con massimali piccoli non deve mai produrre zero: resta il peso più leggero della griglia.
     func testNeverSuggestsZero() {
         let plan = Warmup.plan(base: 8, step: 5)
-        XCTAssertEqual(plan.first?.weight, 5)
-        XCTAssertTrue(plan.allSatisfy { $0.weight >= 5 })
+        XCTAssertEqual(plan.first?.weight, 3)
+        XCTAssertTrue(plan.allSatisfy { $0.weight > 0 })
+        XCTAssertEqual(Warmup.nearest(0.5, anchor: 60, step: 3.75), 3.75)
     }
 
     func testNoMaxMeansNoPlan() {
