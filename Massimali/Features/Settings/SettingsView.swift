@@ -211,6 +211,53 @@ struct SettingsView: View {
                             .font(Theme.rounded(14, .medium))
                     }
                 }
+
+                Divider().overlay(Theme.stroke)
+
+                Toggle(isOn: $settings.plateCalculatorEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Calcolatore dischi")
+                            .font(Theme.rounded(15, .semibold))
+                        Text("Sui bilancieri e sulle plate loaded mostra quali dischi mettere per lato.")
+                            .font(Theme.rounded(11, .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .tint(settings.accentColor)
+
+                if settings.plateCalculatorEnabled {
+                    Stepper(value: $settings.barWeight, in: 0...30, step: 2.5) {
+                        Text("Bilanciere: \(Fmt.weight(settings.barWeight, unit: settings.unit))")
+                            .font(Theme.rounded(14, .medium))
+                    }
+                    Text("Dischi disponibili")
+                        .font(Theme.rounded(12, .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 58), spacing: 8)], spacing: 8) {
+                        ForEach(Plates.catalog, id: \.self) { plate in
+                            let isOn = settings.availablePlates.contains(plate)
+                            Button {
+                                if isOn {
+                                    settings.availablePlates.removeAll { $0 == plate }
+                                } else {
+                                    settings.availablePlates.append(plate)
+                                }
+                                Haptics.tap()
+                            } label: {
+                                Text(Fmt.weightValue(plate, unit: .kg))
+                                    .font(Theme.rounded(13, .bold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        isOn ? PlateBarView.color(for: plate).opacity(0.3) : Theme.card,
+                                        in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    )
+                                    .foregroundStyle(isOn ? Theme.textPrimary : Theme.textTertiary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
             }
         }
     }

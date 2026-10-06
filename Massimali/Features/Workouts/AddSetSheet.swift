@@ -35,6 +35,16 @@ struct AddSetSheet: View {
 
     private var warmupPlan: [Warmup.Step] { exercise.warmupPlan }
 
+    /// Peso senza dischi, se l'esercizio si carica a dischi: bilanciere o leva plate loaded.
+    private var plateBase: Double? {
+        guard settings.plateCalculatorEnabled else { return nil }
+        switch exercise.glyph {
+        case .barbell: return settings.barWeight
+        case .plateLoaded: return 0
+        default: return nil
+        }
+    }
+
     private var suggestion: Progression.Suggestion? {
         guard settings.progressionEnabled, !isWarmup, !isEditing else { return nil }
         return exercise.progression(range: settings.repRange)
@@ -64,6 +74,14 @@ struct AddSetSheet: View {
                         VStack(spacing: 18) {
                             SectionHeader(title: "Carico")
                             WeightStepper(kilograms: $weight, step: exercise.incrementStep, unit: settings.unit, tint: tint)
+                            if let plateBase {
+                                Divider().overlay(Theme.stroke)
+                                PlateBarView(
+                                    load: Plates.load(total: weight, bar: plateBase, plates: settings.availablePlates),
+                                    unit: settings.unit,
+                                    tint: tint
+                                )
+                            }
                         }
                     }
 

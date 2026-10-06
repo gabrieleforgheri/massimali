@@ -143,6 +143,13 @@ carico hanno raggiunto il massimo del range (8–12 di default, in *Impostazioni
 di un passo e si riparte dal minimo, altrimenti si resta sul carico con una ripetizione
 in più. Compare nel dettaglio del macchinario e come scorciatoia quando aggiungi una serie.
 
+Sugli esercizi con pittogramma *Bilanciere* o *Plate loaded* l'aggiunta della serie
+mostra il **calcolatore dischi** (`Model/Plates.swift`, `Design/PlateBarView.swift`):
+mezzo bilanciere con i dischi colorati che entrano a molla a ogni cambio di carico,
+la lista per lato e quanto manca se i dischi della palestra non bastano. Peso del
+bilanciere e dischi disponibili si scelgono in *Impostazioni → Allenamento*; le plate
+loaded partono da zero.
+
 ## Foto dei macchinari
 
 Si scatta senza il ritaglio di sistema di `UIImagePickerController`: quella schermata

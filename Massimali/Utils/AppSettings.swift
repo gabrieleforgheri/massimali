@@ -76,6 +76,9 @@ final class AppSettings {
         static let progression = "settings.progressionEnabled"
         static let repMin = "settings.repRangeMin"
         static let repMax = "settings.repRangeMax"
+        static let plates = "settings.plateCalculatorEnabled"
+        static let barWeight = "settings.barWeight"
+        static let availablePlates = "settings.availablePlates"
     }
 
     private let defaults: UserDefaults
@@ -133,6 +136,21 @@ final class AppSettings {
     /// Mai vuoto: se gli estremi si incrociano vale il minimo.
     var repRange: ClosedRange<Int> { repRangeMin...max(repRangeMin, repRangeMax) }
 
+    /// Calcolatore dischi per bilanciere e plate loaded.
+    var plateCalculatorEnabled: Bool {
+        didSet { defaults.set(plateCalculatorEnabled, forKey: Key.plates) }
+    }
+
+    /// Peso del bilanciere scarico, in kg.
+    var barWeight: Double {
+        didSet { defaults.set(barWeight, forKey: Key.barWeight) }
+    }
+
+    /// Dischi che la tua palestra ha davvero, in kg.
+    var availablePlates: [Double] {
+        didSet { defaults.set(availablePlates, forKey: Key.availablePlates) }
+    }
+
     var lastBackupDate: Date? {
         didSet { defaults.set(lastBackupDate, forKey: Key.lastBackup) }
     }
@@ -158,6 +176,10 @@ final class AppSettings {
         self.progressionEnabled = defaults.object(forKey: Key.progression) as? Bool ?? true
         self.repRangeMin = defaults.object(forKey: Key.repMin) as? Int ?? 8
         self.repRangeMax = defaults.object(forKey: Key.repMax) as? Int ?? 12
+        self.plateCalculatorEnabled = defaults.object(forKey: Key.plates) as? Bool ?? true
+        self.barWeight = defaults.object(forKey: Key.barWeight) as? Double ?? 20
+        self.availablePlates = defaults.array(forKey: Key.availablePlates) as? [Double]
+            ?? [25, 20, 15, 10, 5, 2.5, 1.25]
         self.lastExportDate = defaults.object(forKey: Key.lastExport) as? Date
     }
 
