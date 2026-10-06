@@ -19,6 +19,8 @@ struct WorkoutSessionView: View {
     @State private var showingFinishConfirm = false
     @State private var healthMessage: String?
     @State private var sendingToHealth = false
+    /// Fine del recupero in corso.
+    @State private var restEnd: Date?
 
     private var recordCount: Int {
         workout.setList.filter(\.isPersonalRecord).count
@@ -37,6 +39,10 @@ struct WorkoutSessionView: View {
         ScrollView {
             VStack(spacing: 14) {
                 header
+
+                if let restEnd {
+                    restCard(until: restEnd)
+                }
 
                 ForEach(exercises) { exercise in
                     ExerciseSessionCard(
@@ -122,6 +128,13 @@ struct WorkoutSessionView: View {
             }
         }
         .onAppear { WorkoutActivity.start(for: workout, unit: settings.unit) }
+        .task(id: restEnd) {
+            guard let restEnd else { return }
+            try? await Task.sleep(for: .seconds(max(0, restEnd.timeIntervalSinceNow)))
+            guard !Task.isCancelled else { return }
+            Haptics.success()
+            stopRest()
+        }
         .sheet(isPresented: $showingSummary) {
             WorkoutSummaryView(workout: workout) { dismiss() }
         }
@@ -256,12 +269,63 @@ struct WorkoutSessionView: View {
         let isRecord = RecordService.evaluatePersonalRecord(for: set, context: context)
         try? context.save()
 
+        startRest(for: exercise)
         WorkoutActivity.update(for: workout, unit: settings.unit)
 
         withAnimation(.snappy) {
             pendingExercises.removeAll { $0.persistentModelID == exercise.persistentModelID }
         }
         if isRecord { Haptics.personalRecord() } else { Haptics.commit() }
+    }
+
+    // MARK: - Recupero
+
+    private func restCard(until end: Date) -> some View {
+        GlassCard(padding: 16, tint: settings.accentColor) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Recupero")
+                        .font(Theme.rounded(12, .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                    Text(timerInterval: Date.now...max(end, .now), countsDown: true)
+                        .font(Theme.rounded(30, .bold))
+                        .monospacedDigit()
+                        .foregroundStyle(settings.accentColor)
+                }
+                Spacer()
+                Button("−15") { shiftRest(by: -15) }
+                Button("+15") { shiftRest(by: 15) }
+                Button("Salta") { stopRest() }
+            }
+            .font(Theme.rounded(14, .bold))
+            .buttonStyle(.bordered)
+        }
+        .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    private func startRest(for exercise: Exercise) {
+        guard settings.restTimerEnabled, workout.isActive else { return }
+        let seconds = exercise.restSeconds > 0 ? exercise.restSeconds : settings.restSeconds
+        setRest(Date.now.addingTimeInterval(TimeInterval(seconds)))
+    }
+
+    private func shiftRest(by seconds: Int) {
+        guard let restEnd else { return }
+        let end = restEnd.addingTimeInterval(TimeInterval(seconds))
+        if end <= .now { stopRest() } else { setRest(end) }
+        Haptics.tap()
+    }
+
+    private func stopRest() {
+        RestTimer.cancel()
+        setRest(nil)
+    }
+
+    private func setRest(_ end: Date?) {
+        withAnimation(.snappy) { restEnd = end }
+        WorkoutActivity.restEnd = end
+        if let end { RestTimer.schedule(until: end) }
+        WorkoutActivity.update(for: workout, unit: settings.unit)
     }
 
     private func repeatLastSet(for exercise: Exercise) {
@@ -323,6 +387,9 @@ struct WorkoutSessionView: View {
     private func finish() {
         workout.endedAt = Date()
         try? context.save()
+        RestTimer.cancel()
+        restEnd = nil
+        WorkoutActivity.restEnd = nil
         WorkoutActivity.end()
         if let date = try? BackupService.writeAutoBackup(context: context) {
             settings.lastBackupDate = date

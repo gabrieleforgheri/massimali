@@ -39,6 +39,7 @@ final class BackupRoundTripTests: XCTestCase {
         source.insert(exercise)
         exercise.glyph = .plateLoaded
         exercise.isUnilateral = true
+        exercise.restSeconds = 150
         exercise.photo = Data([0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03])
         try source.save()
 
@@ -50,6 +51,7 @@ final class BackupRoundTripTests: XCTestCase {
         XCTAssertEqual(restored.glyph, .plateLoaded)
         XCTAssertTrue(restored.hasCustomGlyph)
         XCTAssertTrue(restored.isUnilateral)
+        XCTAssertEqual(restored.restSeconds, 150)
         XCTAssertEqual(restored.photo, Data([0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03]))
     }
 

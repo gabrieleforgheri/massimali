@@ -24,6 +24,8 @@ final class Exercise {
     var photoOffset: Double = 0
     /// `true` se si lavora un braccio o una gamba alla volta.
     var isUnilateral: Bool = false
+    /// Recupero dopo ogni serie, in secondi. 0 = quello delle impostazioni.
+    var restSeconds: Int = 0
     var createdAt: Date = Date()
 
     @Relationship(deleteRule: .cascade, inverse: \MaxRecord.exercise)

@@ -132,6 +132,11 @@ una correzione al ribasso non lascia in giro un record mai fatto. Ogni sessione 
 il suo campo **note**, e il selettore degli esercizi mette in cima quelli **usati di
 recente** — con 98 macchinari a catalogo è lì che si perde tempo.
 
+Dopo ogni serie parte il **timer di recupero** (attivabile in *Impostazioni →
+Allenamento*): durata predefinita lì, sovrascrivibile per macchinario nell'editor.
+Si allunga o accorcia di 15 s, si salta, conta alla rovescia anche nella Live Activity
+e, con il telefono in tasca, avvisa con una notifica locale.
+
 ## Foto dei macchinari
 
 Si scatta senza il ritaglio di sistema di `UIImagePickerController`: quella schermata

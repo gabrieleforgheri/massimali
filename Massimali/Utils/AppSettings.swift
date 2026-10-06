@@ -71,6 +71,8 @@ final class AppSettings {
         static let lastExport = "settings.lastExportDate"
         static let didCurate = "settings.didCurateCatalog"
         static let health = "settings.healthSyncEnabled"
+        static let restEnabled = "settings.restTimerEnabled"
+        static let restSeconds = "settings.restSeconds"
     }
 
     private let defaults: UserDefaults
@@ -102,6 +104,16 @@ final class AppSettings {
         didSet { defaults.set(healthSyncEnabled, forKey: Key.health) }
     }
 
+    /// Timer di recupero dopo ogni serie.
+    var restTimerEnabled: Bool {
+        didSet { defaults.set(restTimerEnabled, forKey: Key.restEnabled) }
+    }
+
+    /// Recupero predefinito in secondi; ogni macchinario può avere il suo.
+    var restSeconds: Int {
+        didSet { defaults.set(restSeconds, forKey: Key.restSeconds) }
+    }
+
     var lastBackupDate: Date? {
         didSet { defaults.set(lastBackupDate, forKey: Key.lastBackup) }
     }
@@ -122,6 +134,8 @@ final class AppSettings {
         self.didCurateCatalog = defaults.bool(forKey: Key.didCurate)
         self.healthSyncEnabled = defaults.bool(forKey: Key.health)
         self.lastBackupDate = defaults.object(forKey: Key.lastBackup) as? Date
+        self.restTimerEnabled = defaults.object(forKey: Key.restEnabled) as? Bool ?? true
+        self.restSeconds = defaults.object(forKey: Key.restSeconds) as? Int ?? 120
         self.lastExportDate = defaults.object(forKey: Key.lastExport) as? Date
     }
 

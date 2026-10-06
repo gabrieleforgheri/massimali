@@ -58,10 +58,20 @@ struct WorkoutLiveActivity: Widget {
     }
 }
 
+/// Durante il recupero conta alla rovescia, altrimenti mostra la durata della sessione.
+// ponytail: a recupero finito con l'app in background resta su 0:00 finché l'app
+// non aggiorna l'attività; per tornare da solo alla durata servirebbe un push.
+@ViewBuilder
 private func timer(_ context: ActivityViewContext<WorkoutActivityAttributes>) -> some View {
-    Text(timerInterval: context.attributes.startDate...Date.distantFuture, countsDown: false)
-        .monospacedDigit()
-        .multilineTextAlignment(.trailing)
+    if let restEnd = context.state.restEnd {
+        Text(timerInterval: Date.now...max(restEnd, .now), countsDown: true)
+            .monospacedDigit()
+            .multilineTextAlignment(.trailing)
+    } else {
+        Text(timerInterval: context.attributes.startDate...Date.distantFuture, countsDown: false)
+            .monospacedDigit()
+            .multilineTextAlignment(.trailing)
+    }
 }
 
 private struct LockScreenView: View {
@@ -79,7 +89,9 @@ private struct LockScreenView: View {
                 Text(context.state.exercise.isEmpty ? "Allenamento in corso" : context.state.exercise)
                     .font(.system(.headline, design: .rounded))
                     .lineLimit(1)
-                Text("\(context.state.sets) serie · \(context.state.volume)")
+                Text(context.state.restEnd == nil
+                     ? "\(context.state.sets) serie · \(context.state.volume)"
+                     : "Recupero · \(context.state.sets) serie")
                     .font(.system(.caption, design: .rounded).weight(.medium))
                     .foregroundStyle(.secondary)
             }

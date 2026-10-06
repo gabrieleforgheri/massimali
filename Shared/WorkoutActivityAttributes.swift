@@ -9,6 +9,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var exercise: String
         var sets: Int
         var volume: String
+        /// Fine del recupero in corso, se c'è.
+        var restEnd: Date? = nil
     }
 
     var startDate: Date

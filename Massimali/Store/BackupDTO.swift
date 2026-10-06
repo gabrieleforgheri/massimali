@@ -29,6 +29,8 @@ struct ExerciseDTO: Codable {
     var photoOffset: Double?
     /// Opzionale: i backup più vecchi non distinguono mono e bilaterale.
     var isUnilateral: Bool?
+    /// Opzionale per lo stesso motivo; assente = recupero delle impostazioni.
+    var restSeconds: Int?
     var records: [MaxRecordDTO]
 }
 

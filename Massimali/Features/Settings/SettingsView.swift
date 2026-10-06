@@ -104,6 +104,7 @@ struct SettingsView: View {
                         }
                     }
 
+                    trainingCard
                     healthCard
                     backupCard
                     catalogCard
@@ -157,6 +158,35 @@ struct SettingsView: View {
                 Button("Ok", role: .cancel) {}
             } message: {
                 Text(alert?.message ?? "")
+            }
+        }
+    }
+
+    // MARK: - Allenamento
+
+    private var trainingCard: some View {
+        @Bindable var settings = settings
+        return GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeader(title: "Allenamento")
+
+                Toggle(isOn: $settings.restTimerEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Timer di recupero")
+                            .font(Theme.rounded(15, .semibold))
+                        Text("Parte dopo ogni serie e avvisa quando è ora di ricominciare.")
+                            .font(Theme.rounded(11, .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .tint(settings.accentColor)
+
+                if settings.restTimerEnabled {
+                    Stepper(value: $settings.restSeconds, in: 15...600, step: 15) {
+                        Text("Recupero predefinito: \(Fmt.duration(seconds: settings.restSeconds))")
+                            .font(Theme.rounded(14, .medium))
+                    }
+                }
             }
         }
     }

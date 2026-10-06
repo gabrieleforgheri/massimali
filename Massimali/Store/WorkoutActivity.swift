@@ -5,6 +5,9 @@ import Foundation
 /// Una sola alla volta: se ne esiste già una, si aggiorna quella.
 enum WorkoutActivity {
 
+    /// Fine del recupero in corso: la imposta la sessione, la legge ogni aggiornamento.
+    static var restEnd: Date?
+
     private static var current: Activity<WorkoutActivityAttributes>? {
         Activity<WorkoutActivityAttributes>.activities.first
     }
@@ -13,7 +16,8 @@ enum WorkoutActivity {
         .init(
             exercise: workout.orderedSets.last?.exercise?.name ?? "",
             sets: workout.workingSetCount,
-            volume: Fmt.volume(workout.totalVolume, unit: unit)
+            volume: Fmt.volume(workout.totalVolume, unit: unit),
+            restEnd: restEnd
         )
     }
 

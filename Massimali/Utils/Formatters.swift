@@ -25,6 +25,11 @@ enum Fmt {
         return "\(value.formatted(.number.precision(.fractionLength(0)))) \(unit.symbol)"
     }
 
+    /// Durata in minuti e secondi, es. "1:30".
+    static func duration(seconds: Int) -> String {
+        Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))
+    }
+
     /// Variazione percentuale con segno, es. "+4,2%".
     static func delta(_ percent: Double) -> String {
         let sign = percent > 0 ? "+" : ""

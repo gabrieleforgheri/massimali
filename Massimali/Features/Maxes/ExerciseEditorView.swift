@@ -21,6 +21,7 @@ struct ExerciseEditorView: View {
     @State private var customStep = false
     @State private var notes = ""
     @State private var isUnilateral = false
+    @State private var restSeconds = 0
     @State private var isArchived = false
     @State private var showingDeleteConfirm = false
     @State private var didLoad = false
@@ -130,6 +131,23 @@ struct ExerciseEditorView: View {
                                 stepChip(group == .gambe ? "Una gamba" : "Un braccio", isOn: isUnilateral) {
                                     isUnilateral = true
                                 }
+                            }
+                        }
+                    }
+
+                    if settings.restTimerEnabled {
+                        GlassCard {
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeader(title: "Recupero")
+                                Stepper(value: $restSeconds, in: 0...600, step: 15) {
+                                    Text(restSeconds == 0
+                                         ? "Come le impostazioni (\(Fmt.duration(seconds: settings.restSeconds)))"
+                                         : Fmt.duration(seconds: restSeconds))
+                                        .font(Theme.rounded(15, .semibold))
+                                }
+                                Text("Tempo di pausa dopo ogni serie su questo macchinario.")
+                                    .font(Theme.rounded(11, .medium))
+                                    .foregroundStyle(Theme.textTertiary)
                             }
                         }
                     }
@@ -436,6 +454,7 @@ struct ExerciseEditorView: View {
         customStep = !steps.contains(step)
         notes = exercise.notes
         isUnilateral = exercise.isUnilateral
+        restSeconds = exercise.restSeconds
         isArchived = exercise.isArchived
         photoData = exercise.photo
         photoOffset = exercise.photoOffset
@@ -451,6 +470,7 @@ struct ExerciseEditorView: View {
             exercise.incrementStep = step
             exercise.notes = notes
             exercise.isUnilateral = isUnilateral
+            exercise.restSeconds = restSeconds
             exercise.isArchived = isArchived
             exercise.photo = photoData
             exercise.photoOffset = photoOffset
@@ -469,6 +489,7 @@ struct ExerciseEditorView: View {
             new.photoOffset = photoOffset
             new.glyph = glyph
             new.isUnilateral = isUnilateral
+            new.restSeconds = restSeconds
         }
         try? context.save()
         Haptics.commit()

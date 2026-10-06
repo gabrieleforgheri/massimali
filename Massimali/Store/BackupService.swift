@@ -76,6 +76,7 @@ enum BackupService {
                     photo: exercise.photo?.base64EncodedString(),
                     photoOffset: exercise.photoOffset == 0 ? nil : exercise.photoOffset,
                     isUnilateral: exercise.isUnilateral ? true : nil,
+                    restSeconds: exercise.restSeconds == 0 ? nil : exercise.restSeconds,
                     records: exercise.recordList.map { record in
                         MaxRecordDTO(
                             uuid: record.uuid,
@@ -206,6 +207,7 @@ enum BackupService {
             exercise.photo = dto.photo.flatMap { Data(base64Encoded: $0) }
             exercise.photoOffset = dto.photoOffset ?? 0
             exercise.isUnilateral = dto.isUnilateral ?? false
+            exercise.restSeconds = dto.restSeconds ?? 0
             context.insert(exercise)
             exercisesByUUID[dto.uuid] = exercise
             addMissingRecords(from: dto, to: exercise, context: context)
