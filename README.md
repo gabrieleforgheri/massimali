@@ -180,14 +180,29 @@ che lavora.
   abbassala.
 - Una serie arrivata dal Watch senza sessione aperta ne apre una nuova.
 
-### Installazione
+### Installazione: dal Mac, non da AltStore
 
-AltStore non firma le app per Watch (`ALTSigner` gestisce solo `PlugIns/*.appex`), quindi
-l'app Watch **non è nell'ipa** e si installa da Xcode: scheme **MassimaliWatch**,
-destinazione l'Apple Watch, Run. Dichiara come companion il bundle id che AltStore dà
-all'app iPhone (`com.gabrieleforghieri.massimali.HKR6AKCLPA`); se cambi Apple ID/team va
-aggiornato in `project.yml`. Con l'Apple ID gratuito scade dopo 7 giorni come l'app:
-si rinnova rilanciando Run.
+Il sistema collega app iPhone e app Watch **solo se l'app iPhone installata contiene
+l'app Watch** (cartella `Watch/`). Verificato sui dispositivi:
+
+| App iPhone installata | App Watch | Risultato |
+|---|---|---|
+| senza `Watch/` | installata a parte | `watchAppInstalled=false`, niente collegamento |
+| con `Watch/` | non installata | l'iPhone non la spinge da solo sull'orologio |
+| con `Watch/`, poi Watch installato | ✓ | collegati: serie inviata e ricevuta |
+| sostituita con una senza `Watch/` | già installata | il Watch perde il collegamento |
+
+AltStore non può installare un'app con dentro il Watch: AltSign firma con `ldid`, che
+riconosce come annidati solo `Frameworks/` e `PlugIns/`. L'eseguibile in `Watch/` viene
+rifirmato come file qualsiasi, senza entitlement, e l'installazione fallisce (issue
+altstoreio/AltStore #229 e #684). Quindi:
+
+- **ipa di AltStore** (`build_ipa.sh`, CI): senza Watch, per chi non lo usa;
+- **versione con il Watch**: `./scripts/install_device.sh`, con iPhone e Watch sbloccati e
+  Modalità sviluppatore attiva su entrambi. Compila in una copia temporanea con gli stessi
+  bundle id di AltStore (i dati restano), incorpora il Watch, installa prima l'iPhone e
+  poi l'orologio. Con l'Apple ID gratuito dura 7 giorni: si rilancia lo script.
+  Aggiornare Massimali da AltStore toglie il Watch: si torna a funzionare rilanciando lo script.
 
 Per tenere i sensori accesi a polso abbassato il Watch apre una sessione di
 allenamento HealthKit che **non viene mai salvata**: in Salute l'allenamento lo scrive

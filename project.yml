@@ -70,9 +70,10 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
 
   # App del Watch: conta le ripetizioni e rimanda le serie all'iPhone.
-  # NON è dipendenza dell'app iPhone, quindi non finisce nell'ipa: AltStore non firma
-  # le app Watch, questa si installa da Xcode direttamente sull'orologio. Il companion
-  # è il bundle id che AltStore assegna all'app iPhone (con il team in coda).
+  # NON è dipendenza dell'app iPhone, quindi non finisce nell'ipa di AltStore, che non
+  # sa firmarla. La versione con il Watch la monta scripts/install_device.sh, che
+  # aggiunge la dipendenza in una copia temporanea. Il companion è il bundle id che
+  # AltStore assegna all'app iPhone (con il team in coda), così i dati restano gli stessi.
   MassimaliWatch:
     type: application
     platform: watchOS

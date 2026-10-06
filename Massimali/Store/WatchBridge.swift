@@ -7,9 +7,10 @@ import WatchConnectivity
 /// Collegamento con l'app del Watch. L'iPhone dice quale esercizio è aperto,
 /// il Watch rimanda le serie concluse, che finiscono nella sessione in corso.
 ///
-/// L'app del Watch si installa da Xcode e non da AltStore (che non firma le app
-/// Watch): dichiara come companion il bundle id di AltStore, quindi per
-/// WatchConnectivity le due app sono la stessa cosa.
+/// Funziona solo se l'app iPhone installata contiene l'app Watch (`Watch/`): è il
+/// sistema a legare le due app, e lo fa solo così. AltStore non sa firmarla, quindi
+/// la versione con il Watch si installa dal Mac con `scripts/install_device.sh`;
+/// nell'ipa di AltStore il Watch non c'è e questo ponte resta inerte.
 @Observable
 final class WatchBridge: NSObject, WCSessionDelegate {
 
