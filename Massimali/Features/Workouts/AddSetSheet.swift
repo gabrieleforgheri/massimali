@@ -35,6 +35,11 @@ struct AddSetSheet: View {
 
     private var warmupPlan: [Warmup.Step] { exercise.warmupPlan }
 
+    private var suggestion: Progression.Suggestion? {
+        guard settings.progressionEnabled, !isWarmup, !isEditing else { return nil }
+        return exercise.progression(range: settings.repRange)
+    }
+
     /// Il carico da battere, oppure — se lo stai già battendo — quello che stai facendo.
     private var reference: String {
         if isRecord { return Fmt.setLine(weight: weight, reps: reps, unit: settings.unit) }
@@ -119,6 +124,27 @@ struct AddSetSheet: View {
                                     .foregroundStyle(Theme.textTertiary)
                             }
                         }
+                    }
+
+                    if let suggestion {
+                        Button {
+                            weight = suggestion.weight
+                            reps = suggestion.reps
+                            Haptics.tap()
+                        } label: {
+                            HStack {
+                                Label("Consigliato", systemImage: "arrow.up.right")
+                                    .font(Theme.rounded(13, .semibold))
+                                    .foregroundStyle(tint)
+                                Spacer()
+                                Text(Fmt.setLine(weight: suggestion.weight, reps: suggestion.reps, unit: settings.unit))
+                                    .font(Theme.rounded(15, .bold))
+                                    .foregroundStyle(Theme.textPrimary)
+                            }
+                            .padding(14)
+                            .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     if !isWarmup {

@@ -187,6 +187,30 @@ struct SettingsView: View {
                             .font(Theme.rounded(14, .medium))
                     }
                 }
+
+                Divider().overlay(Theme.stroke)
+
+                Toggle(isOn: $settings.progressionEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Suggerisci il prossimo carico")
+                            .font(Theme.rounded(15, .semibold))
+                        Text("Doppia progressione: quando tutte le serie arrivano in cima al range, +1 passo e si riparte dal fondo.")
+                            .font(Theme.rounded(11, .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .tint(settings.accentColor)
+
+                if settings.progressionEnabled {
+                    Stepper(value: $settings.repRangeMin, in: 1...30) {
+                        Text("Ripetizioni minime: \(settings.repRangeMin)")
+                            .font(Theme.rounded(14, .medium))
+                    }
+                    Stepper(value: $settings.repRangeMax, in: settings.repRangeMin...30) {
+                        Text("Ripetizioni massime: \(settings.repRangeMax)")
+                            .font(Theme.rounded(14, .medium))
+                    }
+                }
             }
         }
     }

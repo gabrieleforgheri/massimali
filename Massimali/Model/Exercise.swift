@@ -98,6 +98,19 @@ final class Exercise {
         Warmup.plan(base: currentMax, step: incrementStep)
     }
 
+    /// Prossimo carico consigliato secondo la doppia progressione, calcolato
+    /// sull'ultima sessione **conclusa** in cui hai fatto serie allenanti qui.
+    func progression(range: ClosedRange<Int>) -> Progression.Suggestion? {
+        let working = setList.filter { !$0.isWarmup && $0.workout?.endedAt != nil }
+        guard let last = working.compactMap(\.workout).max(by: { $0.date < $1.date }) else { return nil }
+        let session = working.filter { $0.workout?.persistentModelID == last.persistentModelID }
+        return Progression.next(
+            lastSession: session.map { (weight: $0.weight, reps: $0.reps) },
+            step: incrementStep,
+            range: range
+        )
+    }
+
     /// Miglior carico registrato prima di una certa data, per i badge di variazione.
     func bestWeight(before date: Date) -> Double? {
         recordList.filter { $0.date < date }.map(\.weight).max()

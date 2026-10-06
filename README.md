@@ -137,6 +137,12 @@ Allenamento*): durata predefinita lì, sovrascrivibile per macchinario nell'edit
 Si allunga o accorcia di 15 s, si salta, conta alla rovescia anche nella Live Activity
 e, con il telefono in tasca, avvisa con una notifica locale.
 
+Il **prossimo carico consigliato** segue la doppia progressione (`Model/Progression.swift`):
+sull'ultima sessione conclusa conta il carico più pesante; se tutte le serie a quel
+carico hanno raggiunto il massimo del range (8–12 di default, in *Impostazioni*) si sale
+di un passo e si riparte dal minimo, altrimenti si resta sul carico con una ripetizione
+in più. Compare nel dettaglio del macchinario e come scorciatoia quando aggiungi una serie.
+
 ## Foto dei macchinari
 
 Si scatta senza il ritaglio di sistema di `UIImagePickerController`: quella schermata

@@ -67,6 +67,17 @@ struct ExerciseDetailView: View {
         ScrollView {
             VStack(spacing: 14) {
                 heroCard
+                if settings.progressionEnabled, let next = exercise.progression(range: settings.repRange) {
+                    GlassCard(padding: 16) {
+                        HStack {
+                            SectionHeader(title: "Prossima volta")
+                            Spacer()
+                            Text(Fmt.setLine(weight: next.weight, reps: next.reps, unit: settings.unit))
+                                .font(Theme.rounded(17, .bold))
+                                .foregroundStyle(tint)
+                        }
+                    }
+                }
                 if !warmupPlan.isEmpty { warmupCard }
                 if chartPoints.count >= 2 { chartCard }
                 if !records.isEmpty { recordsCard }

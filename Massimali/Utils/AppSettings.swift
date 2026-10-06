@@ -73,6 +73,9 @@ final class AppSettings {
         static let health = "settings.healthSyncEnabled"
         static let restEnabled = "settings.restTimerEnabled"
         static let restSeconds = "settings.restSeconds"
+        static let progression = "settings.progressionEnabled"
+        static let repMin = "settings.repRangeMin"
+        static let repMax = "settings.repRangeMax"
     }
 
     private let defaults: UserDefaults
@@ -114,6 +117,22 @@ final class AppSettings {
         didSet { defaults.set(restSeconds, forKey: Key.restSeconds) }
     }
 
+    /// Suggerimento del prossimo carico (doppia progressione).
+    var progressionEnabled: Bool {
+        didSet { defaults.set(progressionEnabled, forKey: Key.progression) }
+    }
+
+    var repRangeMin: Int {
+        didSet { defaults.set(repRangeMin, forKey: Key.repMin) }
+    }
+
+    var repRangeMax: Int {
+        didSet { defaults.set(repRangeMax, forKey: Key.repMax) }
+    }
+
+    /// Mai vuoto: se gli estremi si incrociano vale il minimo.
+    var repRange: ClosedRange<Int> { repRangeMin...max(repRangeMin, repRangeMax) }
+
     var lastBackupDate: Date? {
         didSet { defaults.set(lastBackupDate, forKey: Key.lastBackup) }
     }
@@ -136,6 +155,9 @@ final class AppSettings {
         self.lastBackupDate = defaults.object(forKey: Key.lastBackup) as? Date
         self.restTimerEnabled = defaults.object(forKey: Key.restEnabled) as? Bool ?? true
         self.restSeconds = defaults.object(forKey: Key.restSeconds) as? Int ?? 120
+        self.progressionEnabled = defaults.object(forKey: Key.progression) as? Bool ?? true
+        self.repRangeMin = defaults.object(forKey: Key.repMin) as? Int ?? 8
+        self.repRangeMax = defaults.object(forKey: Key.repMax) as? Int ?? 12
         self.lastExportDate = defaults.object(forKey: Key.lastExport) as? Date
     }
 
