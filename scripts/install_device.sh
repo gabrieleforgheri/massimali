@@ -11,8 +11,8 @@
 #   2. usa gli stessi bundle id che dà AltStore (…massimali.<TEAM>), così l'app
 #      sostituisce quella di AltStore senza perdere i dati;
 #   3. incorpora l'app Watch nell'app iPhone e compila con il tuo Apple ID;
-#   4. installa prima l'iPhone e poi il Watch: in quest'ordine il sistema registra la
-#      coppia (verificato: al contrario il Watch risponde companionInstalled=false).
+#   4. installa prima l'iPhone e poi il Watch, togliendo prima la copia vecchia
+#      dall'orologio: solo così il sistema registra la coppia.
 #
 # Con l'Apple ID gratuito la firma dura 7 giorni: per rinnovarla si rilancia lo script.
 # Servono iPhone e Watch sbloccati e Modalità sviluppatore attiva su entrambi.
@@ -75,6 +75,9 @@ APP="$WORK/dd/Build/Products/Release-iphoneos/Massimali.app"
 
 echo "Installo sull'iPhone…"
 xcrun devicectl device install app --device "$IPHONE_ID" "$APP" >/dev/null
+# Installata sopra una copia vecchia, l'app Watch non viene ricollegata all'iPhone:
+# va tolta e rimessa. I dati veri stanno sull'iPhone, sull'orologio non si perde nulla.
 echo "Installo sul Watch…"
+xcrun devicectl device uninstall app --device "$WATCH_ID" "$BASE_ID.$TEAM.watchkitapp" >/dev/null 2>&1 || true
 xcrun devicectl device install app --device "$WATCH_ID" "$APP/Watch/Massimali.app" >/dev/null
 echo "Fatto. Apri Massimali su iPhone: in Impostazioni → Apple Watch deve comparire «collegato»."

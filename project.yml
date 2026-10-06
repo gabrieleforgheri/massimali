@@ -21,8 +21,8 @@ settings:
     DEVELOPMENT_TEAM: HKR6AKCLPA
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     # Qui e non nei target: app ed estensione devono avere la stessa versione.
-    MARKETING_VERSION: "1.2"
-    CURRENT_PROJECT_VERSION: "3"
+    MARKETING_VERSION: "1.3"
+    CURRENT_PROJECT_VERSION: "4"
 
 targets:
   Massimali:

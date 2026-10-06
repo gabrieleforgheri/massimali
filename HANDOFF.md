@@ -75,8 +75,7 @@ pagamento (TestFlight/App Store) o se AltStore risolve le issue #229 e #684.
   e lo script si ferma se non corrisponde.
 - Nessun nuovo entitlement o chiave privacy nell'app iPhone, quindi `docs/apps.json`
   non è cambiato. HealthKit e Motion sono solo nel target Watch, che non va su AltStore.
-- Versione ancora `1.2` in `project.yml`, nessun tag: il rilascio AltStore (tag `v1.3`)
-  lo decide l'utente.
+- La 1.3 è pubblicata su AltStore (tag `v1.3`, CI `altstore-release.yml`) **senza Watch**.
 
 ## Prossimi passi possibili
 
@@ -84,6 +83,6 @@ pagamento (TestFlight/App Store) o se AltStore risolve le issue #229 e #684.
    sensibilità o soglia adattiva.
 2. Eseguire la suite di test quando il Mac è libero
    (`xcodebuild test … -destination 'platform=iOS Simulator,name=iPhone 18 Pro'`).
-3. Rilascio 1.3 su AltStore (bump di `MARKETING_VERSION`, tag), sapendo che aggiornare
-   da AltStore toglie il Watch: poi rilanciare `install_device.sh`.
+3. Ricordare che aggiornare Massimali da AltStore toglie il Watch: dopo, rilanciare
+   `install_device.sh`.
 4. Eventuale: countdown del recupero anche sul Watch, vibrazione a fine recupero al polso.
