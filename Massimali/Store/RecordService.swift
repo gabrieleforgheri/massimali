@@ -7,6 +7,28 @@ enum RecordService {
     /// Tolleranza per evitare che un arrotondamento faccia scattare un falso record.
     private static let epsilon = MaxRanking.epsilon
 
+    /// Registra una serie in coda all'allenamento e valuta subito il record.
+    /// Unico percorso sia per la sessione sull'iPhone sia per le serie dal Watch.
+    /// Restituisce `true` se è scattato un nuovo record.
+    @discardableResult
+    static func addSet(
+        to workout: Workout,
+        exercise: Exercise,
+        weight: Double,
+        reps: Int,
+        isWarmup: Bool,
+        context: ModelContext
+    ) -> Bool {
+        let order = (workout.setList.map(\.order).max() ?? -1) + 1
+        let set = WorkoutSet(weight: weight, reps: reps, isWarmup: isWarmup, order: order)
+        context.insert(set)
+        set.exercise = exercise
+        set.workout = workout
+        let isRecord = evaluatePersonalRecord(for: set, context: context)
+        try? context.save()
+        return isRecord
+    }
+
     /// Valuta una serie appena registrata: se batte il massimo vero fatto finora sul
     /// macchinario (più carico, o stesso carico con più ripetizioni), crea un
     /// `MaxRecord` automatico e marca la serie come PR.

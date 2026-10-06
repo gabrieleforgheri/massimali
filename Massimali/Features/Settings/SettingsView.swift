@@ -105,6 +105,7 @@ struct SettingsView: View {
                     }
 
                     trainingCard
+                    watchCard
                     healthCard
                     backupCard
                     catalogCard
@@ -260,6 +261,59 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Watch
+
+    private var watchCard: some View {
+        @Bindable var settings = settings
+        return GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeader(
+                    title: "Apple Watch",
+                    trailing: WatchBridge.shared.isWatchAppInstalled ? "collegato" : "app non installata"
+                )
+
+                Toggle(isOn: $settings.watchEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Conta le ripetizioni")
+                            .font(Theme.rounded(15, .semibold))
+                        Text("Sugli esercizi di braccia il Watch conta le ripetizioni, vibra a ognuna e registra la serie qui.")
+                            .font(Theme.rounded(11, .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .tint(settings.accentColor)
+
+                if settings.watchEnabled {
+                    Picker("Serie", selection: $settings.watchMode) {
+                        ForEach(WatchCountMode.allCases) { Text($0.title).tag($0) }
+                    }
+                    .font(Theme.rounded(14, .medium))
+
+                    if settings.watchMode != .tapStartTapEnd {
+                        Stepper(value: $settings.watchAutoEndSeconds, in: 2...15, step: 1) {
+                            Text("Fine serie dopo \(Int(settings.watchAutoEndSeconds)) s fermo")
+                                .font(Theme.rounded(14, .medium))
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Sensibilità: \(settings.watchSensitivity.formatted(.number.precision(.fractionLength(1))))")
+                            .font(Theme.rounded(14, .medium))
+                        Slider(value: $settings.watchSensitivity, in: 0.5...2, step: 0.1)
+                            .tint(settings.accentColor)
+                        Text("Se salta ripetizioni alzala, se ne conta di troppe abbassala.")
+                            .font(Theme.rounded(11, .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+            }
+        }
+        .onChange(of: settings.watchMode) { WatchBridge.shared.settingsChanged() }
+        .onChange(of: settings.watchAutoEndSeconds) { WatchBridge.shared.settingsChanged() }
+        .onChange(of: settings.watchSensitivity) { WatchBridge.shared.settingsChanged() }
+        .onChange(of: settings.unit) { WatchBridge.shared.settingsChanged() }
     }
 
     // MARK: - Salute

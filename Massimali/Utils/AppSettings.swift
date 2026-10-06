@@ -79,6 +79,10 @@ final class AppSettings {
         static let plates = "settings.plateCalculatorEnabled"
         static let barWeight = "settings.barWeight"
         static let availablePlates = "settings.availablePlates"
+        static let watch = "settings.watchEnabled"
+        static let watchMode = "settings.watchMode"
+        static let watchAutoEnd = "settings.watchAutoEndSeconds"
+        static let watchSensitivity = "settings.watchSensitivity"
     }
 
     private let defaults: UserDefaults
@@ -151,6 +155,25 @@ final class AppSettings {
         didSet { defaults.set(availablePlates, forKey: Key.availablePlates) }
     }
 
+    /// App del Watch: conteggio delle ripetizioni e serie registrate dall'orologio.
+    var watchEnabled: Bool {
+        didSet { defaults.set(watchEnabled, forKey: Key.watch) }
+    }
+
+    var watchMode: WatchCountMode {
+        didSet { defaults.set(watchMode.rawValue, forKey: Key.watchMode) }
+    }
+
+    /// Secondi di fermo dopo l'ultima ripetizione prima di chiudere la serie.
+    var watchAutoEndSeconds: Double {
+        didSet { defaults.set(watchAutoEndSeconds, forKey: Key.watchAutoEnd) }
+    }
+
+    /// Calibrazione del contatore: 1 normale, più alto conta movimenti più piccoli.
+    var watchSensitivity: Double {
+        didSet { defaults.set(watchSensitivity, forKey: Key.watchSensitivity) }
+    }
+
     var lastBackupDate: Date? {
         didSet { defaults.set(lastBackupDate, forKey: Key.lastBackup) }
     }
@@ -180,6 +203,10 @@ final class AppSettings {
         self.barWeight = defaults.object(forKey: Key.barWeight) as? Double ?? 20
         self.availablePlates = defaults.array(forKey: Key.availablePlates) as? [Double]
             ?? [25, 20, 15, 10, 5, 2.5, 1.25]
+        self.watchEnabled = defaults.object(forKey: Key.watch) as? Bool ?? true
+        self.watchMode = WatchCountMode(rawValue: defaults.string(forKey: Key.watchMode) ?? "") ?? .tapStartAutoEnd
+        self.watchAutoEndSeconds = defaults.object(forKey: Key.watchAutoEnd) as? Double ?? 4
+        self.watchSensitivity = defaults.object(forKey: Key.watchSensitivity) as? Double ?? 1
         self.lastExportDate = defaults.object(forKey: Key.lastExport) as? Date
     }
 

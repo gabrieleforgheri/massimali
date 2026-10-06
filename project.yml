@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.gabrieleforghieri
   deploymentTarget:
     iOS: "17.0"
+    watchOS: "10.0"
   createIntermediateGroups: true
   groupSortPosition: top
 
@@ -30,6 +31,7 @@ targets:
     sources:
       - path: Massimali
       - path: Shared
+      - path: WatchShared
     dependencies:
       - target: MassimaliWidgets
     settings:
@@ -67,6 +69,32 @@ targets:
         SKIP_INSTALL: YES
         GENERATE_INFOPLIST_FILE: NO
 
+  # App del Watch: conta le ripetizioni e rimanda le serie all'iPhone.
+  # NON è dipendenza dell'app iPhone, quindi non finisce nell'ipa: AltStore non firma
+  # le app Watch, questa si installa da Xcode direttamente sull'orologio. Il companion
+  # è il bundle id che AltStore assegna all'app iPhone (con il team in coda).
+  MassimaliWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: MassimaliWatch
+      - path: WatchShared
+    info:
+      path: MassimaliWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Massimali
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKRunsIndependentlyOfCompanionApp: true
+        WKCompanionAppBundleIdentifier: com.gabrieleforghieri.massimali.HKR6AKCLPA
+    settings:
+      base:
+        PRODUCT_NAME: Massimali
+        PRODUCT_BUNDLE_IDENTIFIER: com.gabrieleforghieri.massimali.HKR6AKCLPA.watchkitapp
+        GENERATE_INFOPLIST_FILE: NO
+
   MassimaliTests:
     type: bundle.unit-test
     platform: iOS
@@ -80,6 +108,12 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  MassimaliWatch:
+    build:
+      targets:
+        MassimaliWatch: all
+    run:
+      config: Debug
   Massimali:
     build:
       targets:

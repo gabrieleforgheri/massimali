@@ -12,6 +12,7 @@ struct MassimaliApp: App {
                 .environment(settings)
                 .tint(settings.accentColor)
                 .preferredColorScheme(.dark)
+                .task { WatchBridge.shared.activate(container: container, settings: settings) }
         }
         .modelContainer(container)
     }

@@ -19,8 +19,10 @@ struct WorkoutSessionView: View {
     @State private var showingFinishConfirm = false
     @State private var healthMessage: String?
     @State private var sendingToHealth = false
-    /// Fine del recupero in corso.
-    @State private var restEnd: Date?
+
+    private var canUseWatch: Bool {
+        settings.watchEnabled && workout.isActive && WatchBridge.shared.isWatchAppInstalled
+    }
 
     private var recordCount: Int {
         workout.setList.filter(\.isPersonalRecord).count
@@ -40,7 +42,7 @@ struct WorkoutSessionView: View {
             VStack(spacing: 14) {
                 header
 
-                if let restEnd {
+                if let restEnd = RestTimer.shared.end {
                     restCard(until: restEnd)
                 }
 
@@ -49,6 +51,7 @@ struct WorkoutSessionView: View {
                         exercise: exercise,
                         sets: workout.sets(for: exercise),
                         onAddSet: { addSetTarget = exercise },
+                        onStartOnWatch: canUseWatch ? { WatchBridge.shared.start(exercise, in: workout) } : nil,
                         onRepeatLast: { repeatLastSet(for: exercise) },
                         onEditSet: { editingSet = $0 },
                         onDeleteSet: { delete($0) }
@@ -128,8 +131,8 @@ struct WorkoutSessionView: View {
             }
         }
         .onAppear { WorkoutActivity.start(for: workout, unit: settings.unit) }
-        .task(id: restEnd) {
-            guard let restEnd else { return }
+        .task(id: RestTimer.shared.end) {
+            guard let restEnd = RestTimer.shared.end else { return }
             try? await Task.sleep(for: .seconds(max(0, restEnd.timeIntervalSinceNow)))
             guard !Task.isCancelled else { return }
             Haptics.success()
@@ -255,22 +258,16 @@ struct WorkoutSessionView: View {
     }
 
     private func addSet(to exercise: Exercise, weight: Double, reps: Int, isWarmup: Bool) {
-        let order = (workout.setList.map(\.order).max() ?? -1) + 1
-        let set = WorkoutSet(
+        let isRecord = RecordService.addSet(
+            to: workout,
+            exercise: exercise,
             weight: weight,
             reps: reps,
             isWarmup: isWarmup,
-            order: order
+            context: context
         )
-        context.insert(set)
-        set.exercise = exercise
-        set.workout = workout
-
-        let isRecord = RecordService.evaluatePersonalRecord(for: set, context: context)
-        try? context.save()
-
         startRest(for: exercise)
-        WorkoutActivity.update(for: workout, unit: settings.unit)
+        WatchBridge.shared.show(exercise, in: workout)
 
         withAnimation(.snappy) {
             pendingExercises.removeAll { $0.persistentModelID == exercise.persistentModelID }
@@ -304,27 +301,20 @@ struct WorkoutSessionView: View {
     }
 
     private func startRest(for exercise: Exercise) {
-        guard settings.restTimerEnabled, workout.isActive else { return }
-        let seconds = exercise.restSeconds > 0 ? exercise.restSeconds : settings.restSeconds
-        setRest(Date.now.addingTimeInterval(TimeInterval(seconds)))
+        if settings.restTimerEnabled, workout.isActive {
+            RestTimer.shared.start(seconds: exercise.restSeconds > 0 ? exercise.restSeconds : settings.restSeconds)
+        }
+        WorkoutActivity.update(for: workout, unit: settings.unit)
     }
 
     private func shiftRest(by seconds: Int) {
-        guard let restEnd else { return }
-        let end = restEnd.addingTimeInterval(TimeInterval(seconds))
-        if end <= .now { stopRest() } else { setRest(end) }
+        withAnimation(.snappy) { RestTimer.shared.shift(by: seconds) }
+        WorkoutActivity.update(for: workout, unit: settings.unit)
         Haptics.tap()
     }
 
     private func stopRest() {
-        RestTimer.cancel()
-        setRest(nil)
-    }
-
-    private func setRest(_ end: Date?) {
-        withAnimation(.snappy) { restEnd = end }
-        WorkoutActivity.restEnd = end
-        if let end { RestTimer.schedule(until: end) }
+        withAnimation(.snappy) { RestTimer.shared.stop() }
         WorkoutActivity.update(for: workout, unit: settings.unit)
     }
 
@@ -387,10 +377,9 @@ struct WorkoutSessionView: View {
     private func finish() {
         workout.endedAt = Date()
         try? context.save()
-        RestTimer.cancel()
-        restEnd = nil
-        WorkoutActivity.restEnd = nil
+        RestTimer.shared.stop()
         WorkoutActivity.end()
+        WatchBridge.shared.clear()
         if let date = try? BackupService.writeAutoBackup(context: context) {
             settings.lastBackupDate = date
         }
@@ -411,6 +400,8 @@ private struct ExerciseSessionCard: View {
     let exercise: Exercise
     let sets: [WorkoutSet]
     let onAddSet: () -> Void
+    /// `nil` se il Watch non c'è o è disattivato.
+    let onStartOnWatch: (() -> Void)?
     let onRepeatLast: () -> Void
     let onEditSet: (WorkoutSet) -> Void
     let onDeleteSet: (WorkoutSet) -> Void
@@ -432,6 +423,20 @@ private struct ExerciseSessionCard: View {
                         }
                     }
                     Spacer()
+                    if let onStartOnWatch {
+                        Button {
+                            onStartOnWatch()
+                            Haptics.tap()
+                        } label: {
+                            Image(systemName: "applewatch.radiowaves.left.and.right")
+                                .font(.system(size: 16, weight: .semibold))
+                                .frame(width: 36, height: 36)
+                                .background(Theme.card, in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(settings.accentColor)
+                        .accessibilityLabel("Avvia la serie sul Watch")
+                    }
                 }
 
                 if sets.isEmpty {
