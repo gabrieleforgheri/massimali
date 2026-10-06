@@ -22,6 +22,8 @@ final class Exercise {
     /// Inquadratura della foto nel riquadro quadrato: −1…1 sull'asse che sborda,
     /// 0 al centro. Vedi `PhotoFraming`.
     var photoOffset: Double = 0
+    /// `true` se si lavora un braccio o una gamba alla volta.
+    var isUnilateral: Bool = false
     var createdAt: Date = Date()
 
     @Relationship(deleteRule: .cascade, inverse: \MaxRecord.exercise)
@@ -56,6 +58,10 @@ final class Exercise {
         get { MachineGlyph(rawValue: glyphRaw) ?? MachineGlyph.suggested(for: name, group: muscleGroup) }
         set { glyphRaw = newValue.rawValue }
     }
+
+    /// Braccia o gambe, dedotto dal gruppo muscolare: serve al Watch per sapere
+    /// se il polso si muove con l'esercizio.
+    var worksLegs: Bool { muscleGroup == .gambe }
 
     /// `true` se il pittogramma è stato scelto a mano invece che dedotto.
     var hasCustomGlyph: Bool { MachineGlyph(rawValue: glyphRaw) != nil }

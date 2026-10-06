@@ -118,6 +118,9 @@ Ogni macchinario ha un'**immagine**, con due livelli:
   (`Utils/ImageStore.swift`) prima di finire nel database, e viaggia dentro i backup
   in base64 — è la ragione principale per cui il file di backup può crescere.
 
+Nella stessa schermata si sceglie l'**esecuzione**: entrambe le braccia/gambe insieme
+oppure un lato alla volta. Braccia o gambe si deducono dal gruppo muscolare.
+
 Se il pittogramma dedotto non ti convince, nella schermata di modifica c'è la
 striscia con tutti e 22 per sceglierlo a mano.
 

@@ -38,6 +38,7 @@ final class BackupRoundTripTests: XCTestCase {
         let exercise = Exercise(name: "Rematore Plate Loaded", muscleGroup: .schiena, incrementStep: 5)
         source.insert(exercise)
         exercise.glyph = .plateLoaded
+        exercise.isUnilateral = true
         exercise.photo = Data([0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03])
         try source.save()
 
@@ -48,6 +49,7 @@ final class BackupRoundTripTests: XCTestCase {
         let restored = try XCTUnwrap(try destination.fetch(FetchDescriptor<Exercise>()).first)
         XCTAssertEqual(restored.glyph, .plateLoaded)
         XCTAssertTrue(restored.hasCustomGlyph)
+        XCTAssertTrue(restored.isUnilateral)
         XCTAssertEqual(restored.photo, Data([0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03]))
     }
 

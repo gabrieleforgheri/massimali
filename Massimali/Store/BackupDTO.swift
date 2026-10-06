@@ -27,6 +27,8 @@ struct ExerciseDTO: Codable {
     var photo: String?
     /// Inquadratura della foto. Opzionale: i backup più vecchi non ce l'hanno.
     var photoOffset: Double?
+    /// Opzionale: i backup più vecchi non distinguono mono e bilaterale.
+    var isUnilateral: Bool?
     var records: [MaxRecordDTO]
 }
 

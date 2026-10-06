@@ -105,6 +105,11 @@ struct ExerciseDetailView: View {
                 HStack(spacing: 10) {
                     ExerciseThumbnail(exercise: exercise, size: 52, zoomable: true)
                     MuscleGroupChip(group: exercise.muscleGroup)
+                    if exercise.isUnilateral {
+                        Text(exercise.worksLegs ? "Una gamba" : "Un braccio")
+                            .font(Theme.rounded(11, .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
                     Spacer()
                     if let best = exercise.bestRecord, best.isEstimated {
                         Text("da allenamento")

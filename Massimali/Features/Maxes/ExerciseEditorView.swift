@@ -20,6 +20,7 @@ struct ExerciseEditorView: View {
     /// Incremento scritto a mano invece di uno dei valori preimpostati.
     @State private var customStep = false
     @State private var notes = ""
+    @State private var isUnilateral = false
     @State private var isArchived = false
     @State private var showingDeleteConfirm = false
     @State private var didLoad = false
@@ -116,6 +117,20 @@ struct ExerciseEditorView: View {
                             Text("È il salto minimo tra un carico e l'altro su questo macchinario: definisce i pulsanti + e −.")
                                 .font(Theme.rounded(11, .medium))
                                 .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+
+                    GlassCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionHeader(title: "Esecuzione")
+                            HStack(spacing: 8) {
+                                stepChip(group == .gambe ? "Entrambe le gambe" : "Entrambe le braccia", isOn: !isUnilateral) {
+                                    isUnilateral = false
+                                }
+                                stepChip(group == .gambe ? "Una gamba" : "Un braccio", isOn: isUnilateral) {
+                                    isUnilateral = true
+                                }
+                            }
                         }
                     }
 
@@ -420,6 +435,7 @@ struct ExerciseEditorView: View {
         step = exercise.incrementStep
         customStep = !steps.contains(step)
         notes = exercise.notes
+        isUnilateral = exercise.isUnilateral
         isArchived = exercise.isArchived
         photoData = exercise.photo
         photoOffset = exercise.photoOffset
@@ -434,6 +450,7 @@ struct ExerciseEditorView: View {
             exercise.muscleGroup = group
             exercise.incrementStep = step
             exercise.notes = notes
+            exercise.isUnilateral = isUnilateral
             exercise.isArchived = isArchived
             exercise.photo = photoData
             exercise.photoOffset = photoOffset
@@ -451,6 +468,7 @@ struct ExerciseEditorView: View {
             new.photo = photoData
             new.photoOffset = photoOffset
             new.glyph = glyph
+            new.isUnilateral = isUnilateral
         }
         try? context.save()
         Haptics.commit()

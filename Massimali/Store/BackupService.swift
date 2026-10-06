@@ -75,6 +75,7 @@ enum BackupService {
                     glyph: exercise.glyphRaw.isEmpty ? nil : exercise.glyphRaw,
                     photo: exercise.photo?.base64EncodedString(),
                     photoOffset: exercise.photoOffset == 0 ? nil : exercise.photoOffset,
+                    isUnilateral: exercise.isUnilateral ? true : nil,
                     records: exercise.recordList.map { record in
                         MaxRecordDTO(
                             uuid: record.uuid,
@@ -204,6 +205,7 @@ enum BackupService {
             exercise.glyphRaw = dto.glyph ?? ""
             exercise.photo = dto.photo.flatMap { Data(base64Encoded: $0) }
             exercise.photoOffset = dto.photoOffset ?? 0
+            exercise.isUnilateral = dto.isUnilateral ?? false
             context.insert(exercise)
             exercisesByUUID[dto.uuid] = exercise
             addMissingRecords(from: dto, to: exercise, context: context)
