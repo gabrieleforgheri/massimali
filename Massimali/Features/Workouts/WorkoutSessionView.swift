@@ -11,6 +11,8 @@ struct WorkoutSessionView: View {
 
     /// Esercizi scelti ma ancora senza serie: esistono solo finché la vista è aperta.
     @State private var pendingExercises: [Exercise] = []
+    /// L'esercizio che stai facendo adesso: è quello mostrato sul Watch.
+    @State private var currentExerciseID: PersistentIdentifier?
     @State private var showingPicker = false
     @State private var showingFocusPicker = false
     @State private var addSetTarget: Exercise?
@@ -50,6 +52,8 @@ struct WorkoutSessionView: View {
                     ExerciseSessionCard(
                         exercise: exercise,
                         sets: workout.sets(for: exercise),
+                        isCurrent: exercise.persistentModelID == currentExerciseID,
+                        onSelect: { select(exercise) },
                         onAddSet: { addSetTarget = exercise },
                         onStartOnWatch: canUseWatch ? { WatchBridge.shared.start(exercise, in: workout) } : nil,
                         onRepeatLast: { repeatLastSet(for: exercise) },
@@ -101,11 +105,8 @@ struct WorkoutSessionView: View {
                 if !exercises.contains(where: { $0.persistentModelID == exercise.persistentModelID }) {
                     pendingExercises.append(exercise)
                 }
-                // Il foglio successivo deve aspettare che questo sia sparito,
-                // altrimenti iOS ignora la seconda presentazione.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                    addSetTarget = exercise
-                }
+                // Solo la scelta: peso e ripetizioni li decidi dopo, sul Watch o con "+ Serie".
+                select(exercise)
             }
         }
         .sheet(item: $addSetTarget) { exercise in
@@ -267,6 +268,7 @@ struct WorkoutSessionView: View {
             context: context
         )
         startRest(for: exercise)
+        currentExerciseID = exercise.persistentModelID
         WatchBridge.shared.show(exercise, in: workout)
 
         withAnimation(.snappy) {
@@ -316,6 +318,13 @@ struct WorkoutSessionView: View {
     private func stopRest() {
         withAnimation(.snappy) { RestTimer.shared.stop() }
         WorkoutActivity.update(for: workout, unit: settings.unit)
+    }
+
+    /// Segna l'esercizio come quello in corso e lo manda al Watch, senza chiedere nulla.
+    private func select(_ exercise: Exercise) {
+        withAnimation(.snappy) { currentExerciseID = exercise.persistentModelID }
+        WatchBridge.shared.show(exercise, in: workout)
+        Haptics.tap()
     }
 
     private func repeatLastSet(for exercise: Exercise) {
@@ -399,6 +408,9 @@ private struct ExerciseSessionCard: View {
 
     let exercise: Exercise
     let sets: [WorkoutSet]
+    /// `true` se è l'esercizio che stai facendo (quello sul Watch).
+    let isCurrent: Bool
+    let onSelect: () -> Void
     let onAddSet: () -> Void
     /// `nil` se il Watch non c'è o è disattivato.
     let onStartOnWatch: (() -> Void)?
@@ -407,7 +419,7 @@ private struct ExerciseSessionCard: View {
     let onDeleteSet: (WorkoutSet) -> Void
 
     var body: some View {
-        GlassCard(padding: 16) {
+        GlassCard(padding: 16, tint: isCurrent ? exercise.muscleGroup.tint : nil) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     ExerciseThumbnail(exercise: exercise, size: 34, zoomable: true)
@@ -416,13 +428,18 @@ private struct ExerciseSessionCard: View {
                         Text(exercise.name)
                             .font(Theme.rounded(16, .semibold))
                             .foregroundStyle(Theme.textPrimary)
-                        if let best = exercise.bestRecord {
+                        if isCurrent {
+                            Text("IN CORSO")
+                                .font(Theme.rounded(10, .bold))
+                                .tracking(0.7)
+                                .foregroundStyle(exercise.muscleGroup.tint)
+                        } else if let best = exercise.bestRecord {
                             Text("max \(Fmt.setLine(weight: best.weight, reps: best.reps, unit: settings.unit))")
                                 .font(Theme.rounded(11, .medium))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                     if let onStartOnWatch {
                         Button {
                             onStartOnWatch()
@@ -438,6 +455,9 @@ private struct ExerciseSessionCard: View {
                         .accessibilityLabel("Avvia la serie sul Watch")
                     }
                 }
+                // Tocco sull'intestazione = "sto facendo questo": lo manda al Watch.
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onSelect)
 
                 if sets.isEmpty {
                     Text("Nessuna serie registrata")

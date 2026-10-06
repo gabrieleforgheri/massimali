@@ -37,15 +37,24 @@ private struct ExerciseView: View {
                     .font(.title3.weight(.semibold))
                     .monospacedDigit()
                     .focusable()
+                    .contentTransition(.numericText())
+                    .animation(.snappy, value: model.weight)
                     .digitalCrownRotation(
-                        $model.weight,
-                        from: 0,
-                        through: 500,
-                        by: max(exercise.step, 0.5),
+                        $model.weightSteps,
+                        from: model.weightStepRange.lowerBound,
+                        through: model.weightStepRange.upperBound,
+                        by: 1,
                         sensitivity: .low,
                         isContinuous: false,
                         isHapticFeedbackEnabled: true
                     )
+
+                if let started = model.setStartedAt {
+                    Text(started, style: .timer)
+                        .font(.system(.title3, design: .rounded).weight(.semibold))
+                        .monospacedDigit()
+                        .foregroundStyle(.orange)
+                }
 
                 Text("\(model.reps)")
                     .font(.system(size: 54, weight: .bold, design: .rounded))

@@ -20,8 +20,25 @@ final class WatchModel: NSObject, WCSessionDelegate {
 
     private(set) var context: WatchContext?
     private(set) var phase: Phase = .idle
-    /// Carico della serie, in kg; la Digital Crown lo sposta del passo del macchinario.
-    var weight: Double = 0
+    /// Passi del macchinario rispetto al peso proposto: la Digital Crown muove questo,
+    /// così il carico resta sempre un peso inseribile (anche su pacchi sfalsati).
+    var weightSteps: Double = 0
+    /// Carico proposto dall'iPhone, in kg: l'origine della griglia.
+    private(set) var anchorWeight: Double = 0
+    /// Da quando è partita la serie, per il cronometro.
+    private(set) var setStartedAt: Date?
+
+    var step: Double { max(exercise?.step ?? 2.5, 0.25) }
+
+    /// Carico della serie, in kg: sempre sulla griglia del macchinario.
+    var weight: Double {
+        max(0, anchorWeight + weightSteps.rounded() * step)
+    }
+
+    /// Escursione della ghiera: da zero fino a 300 kg sopra il proposto.
+    var weightStepRange: ClosedRange<Double> {
+        -(anchorWeight / step).rounded(.down)...(300 / step).rounded()
+    }
     var reps = 0
     /// Ultima serie inviata, per conferma a schermo.
     private(set) var lastSent: WatchSet?
@@ -57,6 +74,7 @@ final class WatchModel: NSObject, WCSessionDelegate {
     func begin() {
         guard canCount else { return }
         startCounting(phase: .counting)
+        setStartedAt = Date()
         WKInterfaceDevice.current().play(.start)
     }
 
@@ -64,6 +82,7 @@ final class WatchModel: NSObject, WCSessionDelegate {
     func finish() {
         let automatic = mode == .automatic
         stopMotion()
+        setStartedAt = nil
         if reps > 0 { send() }
         if automatic, canCount {
             startCounting(phase: .listening)
@@ -127,7 +146,10 @@ final class WatchModel: NSObject, WCSessionDelegate {
 
         if counter.add(world, at: now) {
             reps = counter.reps
-            if phase == .listening { phase = .counting }
+            if phase == .listening {
+                phase = .counting
+                setStartedAt = Date()
+            }
             WKInterfaceDevice.current().play(.click)
         }
 
@@ -136,6 +158,7 @@ final class WatchModel: NSObject, WCSessionDelegate {
               let last = counter.lastRepAt,
               now - last >= (context?.autoEndSeconds ?? 4) else { return }
         if mode == .automatic, reps < Self.automaticMinimumReps {
+            setStartedAt = nil
             startCounting(phase: .listening)
         } else {
             finish()
@@ -177,6 +200,7 @@ final class WatchModel: NSObject, WCSessionDelegate {
             // Allenamento finito sull'iPhone.
             stopMotion()
             phase = .idle
+            setStartedAt = nil
             endWorkout()
             return
         }
@@ -185,7 +209,9 @@ final class WatchModel: NSObject, WCSessionDelegate {
             if phase == .counting, reps > 0 { finish() }
             stopMotion()
             phase = .idle
-            weight = newContext.exercise?.weight ?? 0
+            setStartedAt = nil
+            anchorWeight = newContext.exercise?.weight ?? 0
+            weightSteps = 0
             reps = 0
             lastSent = nil
         }

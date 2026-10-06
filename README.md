@@ -170,8 +170,14 @@ mostrato (si corregge con la Digital Crown). Sulle gambe il polso è fermo: lì 
 ripetizioni si inseriscono a mano dal Watch. Sui monolaterali il Watch va sul braccio
 che lavora.
 
-- **Avvio**: icona del Watch sulla card dell'esercizio nella sessione (apre l'app
-  sull'orologio tramite HealthKit e fa partire la serie) oppure *Via* sul Watch.
+- **Scelta dell'esercizio**: nella sessione si sceglie solo cosa stai facendo (dal
+  selettore o toccando l'intestazione di una card, che diventa *in corso*), senza peso né
+  ripetizioni. L'esercizio arriva subito sul Watch; *+ Serie* sul telefono resta per
+  inserire a mano.
+- **Peso dalla ghiera**: la Digital Crown si muove a passi del macchinario partendo dal
+  peso proposto, quindi dà solo pesi inseribili (anche sui pacchi sfalsati).
+- **Avvio**: *Via* sul Watch, oppure l'icona del Watch sulla card (apre l'app
+  sull'orologio tramite HealthKit e fa partire la serie). Da *Via* parte un cronometro.
 - **Modalità** (*Impostazioni → Apple Watch*): via a mano e fine automatica dopo N
   secondi fermo (default 4 s), via e fine a mano, oppure tutto automatico (sotto le 3
   ripetizioni è un falso allarme e non si registra).
