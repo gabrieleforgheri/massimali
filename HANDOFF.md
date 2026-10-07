@@ -75,7 +75,7 @@ pagamento (TestFlight/App Store) o se AltStore risolve le issue #229 e #684.
   e lo script si ferma se non corrisponde.
 - Nessun nuovo entitlement o chiave privacy nell'app iPhone, quindi `docs/apps.json`
   non è cambiato. HealthKit e Motion sono solo nel target Watch, che non va su AltStore.
-- La 1.3 è pubblicata su AltStore (tag `v1.3`, CI `altstore-release.yml`) **senza Watch**.
+- Su AltStore è pubblicata la 1.3.1 (tag `v1.3.1`, CI `altstore-release.yml`) **senza Watch**; sui dispositivi dell'utente c'è la 1.3.1 con il Watch, installata con lo script.
 
 ## Prossimi passi possibili
 
